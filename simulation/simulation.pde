@@ -5,8 +5,8 @@ import org.jbox2d.dynamics.*;
 
 PBox2D box2d;
 
-ArrayList<Box> boxes;
 ArrayList<Wall> walls;
+ArrayList<Robot> robots;
 
 Pt[] lvl_outer, lvl_inner;
 
@@ -21,8 +21,8 @@ void setup() {
 	box2d.setGravity(0, 0);
 
 	// Create ArrayLists	
-	boxes = new ArrayList<Box>();
 	walls = new ArrayList<Wall>();
+	robots = new ArrayList<Robot>();
 
 	//load the level
 	lvl_outer = new Pt[6];
@@ -49,35 +49,61 @@ void setup() {
 	for(int i=0; i<lvl_outer.length-1; i++)
 		walls.add(new Wall(lvl_inner[i].x, lvl_inner[i].y, lvl_inner[i+1].x, lvl_inner[i+1].y));
 	walls.add(new Wall(lvl_inner[lvl_inner.length-1].x, lvl_inner[lvl_inner.length-1].y, lvl_inner[0].x, lvl_inner[0].y));
+
+	//add a robot for testing!
+	Robot robby = new Robot(box2d, width/2, height/2);
+	robots.add(robby);
 }
 
 void draw() {
 	background(255);
 
+	//let the robots think
+	for(Robot r: robots)
+		r.update();
+
 	//increment simulation
 	box2d.step();
-
-	//add boxes to the middle
-	if (random(1) < 0.2) {
-		Box p = new Box(width/2-30, height/2-30);
-		boxes.add(p);
-	}
 
 	//draw the walls
 	for(Wall w: walls)
 		w.display();
 
-	//display all the boxes
-	for (Box b: boxes)
-		b.display();
+	//display all the robots
+	for (Robot r: robots) {
+		//get position and angle
+		Vec2 pos = r.box2d.getBodyPixelCoord(r.body);
+		float a = r.body.getAngle();
 
-	// Boxes that leave the screen, we delete them
-	// (note they have to be deleted from both the box2d world and our list
-	for (int i = boxes.size()-1; i >= 0; i--) {
-		Box b = boxes.get(i);
-		if (b.done()) {
-			boxes.remove(i);
-		}
+		float w = r.getWidth();
+		float h = r.getHeight();
+
+		rectMode(CENTER);
+		pushMatrix();
+		translate(pos.x, pos.y);
+		rotate(a);
+		fill(175);
+		stroke(0);
+		strokeWeight(1);
+		rect(0, 0, w, h);
+		strokeWeight(3);
+		line(0, 0, w/2, 0);
+		popMatrix();
+	}
+}
+
+void keyPressed() {
+	if(key=='q') {
+		robots.get(0).left(0.5f);
+	} else if(key=='e') {
+		robots.get(0).right(0.5f);
+	} else if(key=='a') {
+		robots.get(0).left(-0.5f);
+	} else if(key=='d') {
+		robots.get(0).right(-0.5f);
+	} else {
+		robots.get(0).left(0.0f);
+		robots.get(0).right(0.0f);
 	}
 }
 
@@ -125,6 +151,7 @@ class Wall {
 	}
 }
 
+//for testing purposes
 class Box {
 	protected Body body;
 	protected float w;
