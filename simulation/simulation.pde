@@ -3,13 +3,12 @@ import org.jbox2d.collision.shapes.*;
 import org.jbox2d.common.*;
 import org.jbox2d.dynamics.*;
 
-// A reference to our box2d world
 PBox2D box2d;
 
-// A list for all of our rectangles
 ArrayList<Box> boxes;
+ArrayList<Wall> walls;
 
-Surface surface;
+Pt[] lvl_outer, lvl_inner;
 
 void setup() {
 	size(640, 480);
@@ -23,31 +22,54 @@ void setup() {
 
 	// Create ArrayLists	
 	boxes = new ArrayList<Box>();
+	walls = new ArrayList<Wall>();
 
-	surface = new Surface();
+	//load the level
+	lvl_outer = new Pt[6];
+	lvl_inner = new Pt[6];
+	
+	lvl_outer[0] = new Pt(125, 0);
+	lvl_outer[1] = new Pt(375, 0);
+	lvl_outer[5] = new Pt(0, 217);
+	lvl_outer[2] = new Pt(500, 217);
+	lvl_outer[4] = new Pt(125, 434);
+	lvl_outer[3] = new Pt(375, 434);
+
+	lvl_inner[0] = new Pt(250, 162);
+	lvl_inner[1] = new Pt(298, 190);
+	lvl_inner[2] = new Pt(298, 244);
+	lvl_inner[3] = new Pt(250, 272);
+	lvl_inner[4] = new Pt(202, 244);
+	lvl_inner[5] = new Pt(202, 190);
+
+	for(int i=0; i<lvl_outer.length-1; i++)
+		walls.add(new Wall(lvl_outer[i].x, lvl_outer[i].y, lvl_outer[i+1].x, lvl_outer[i+1].y));
+	walls.add(new Wall(lvl_outer[lvl_outer.length-1].x, lvl_outer[lvl_outer.length-1].y, lvl_outer[0].x, lvl_outer[0].y));
+
+	for(int i=0; i<lvl_outer.length-1; i++)
+		walls.add(new Wall(lvl_inner[i].x, lvl_inner[i].y, lvl_inner[i+1].x, lvl_inner[i+1].y));
+	walls.add(new Wall(lvl_inner[lvl_inner.length-1].x, lvl_inner[lvl_inner.length-1].y, lvl_inner[0].x, lvl_inner[0].y));
 }
 
 void draw() {
 	background(255);
 
-	// We must always step through time!
+	//increment simulation
 	box2d.step();
 
-	// Boxes fall from the top every so often
+	//add boxes to the middle
 	if (random(1) < 0.2) {
-		Box p = new Box(width/2,30);
+		Box p = new Box(width/2-30, height/2-30);
 		boxes.add(p);
 	}
 
-	// Display all the boundaries
-	for (Boundary wall: boundaries) {
-		wall.display();
-	}
+	//draw the walls
+	for(Wall w: walls)
+		w.display();
 
-	// Display all the boxes
-	for (Box b: boxes) {
+	//display all the boxes
+	for (Box b: boxes)
 		b.display();
-	}
 
 	// Boxes that leave the screen, we delete them
 	// (note they have to be deleted from both the box2d world and our list
@@ -59,17 +81,18 @@ void draw() {
 	}
 }
 
-class Surface {
-	// We'll keep track of all of the surface points
+class Wall {
 	ArrayList<Vec2> surface;
 
+	public Wall(float x1, float y1, float x2, float y2) {
+		float angle = atan2(y2-y1, x2-x1);
 
-	Surface() {
 		surface = new ArrayList<Vec2>();
-		// Here we keep track of the screen coordinates of the chain
-		surface.add(new Vec2(width,height/2));
-		surface.add(new Vec2(width/2,height/2+50));
-		surface.add(new Vec2(0,height/2+50));
+
+		surface.add(new Vec2(x1, y1));
+		surface.add(new Vec2(x2, y2));
+		surface.add(new Vec2(x2+4*cos(angle-PI/2), y2+4*sin(angle-PI/2)));
+		surface.add(new Vec2(x1+4*cos(angle-PI/2), y1+4*sin(angle-PI/2)));
 
 		// This is what box2d uses to put the surface in its world
 		ChainShape chain = new ChainShape();
@@ -92,27 +115,25 @@ class Surface {
 
 	// A simple function to just draw the edge chain as a series of vertex points
 	void display() {
-		strokeWeight(1);
-		stroke(0);
-		fill(200);
+		fill(0);
+		noStroke();
 		beginShape();
 		for (Vec2 v: surface) {
 			vertex(v.x,v.y);
 		}
-		vertex(0,height);
-		vertex(width,height);
 		endShape();
 	}
 }
 
 class Box {
-	// We need to keep track of a Body and a width and height
-	Body body;
-	float w;
-	float h;
+	protected Body body;
+	protected float w;
+	protected float h;
 
-	// Constructor
-	Box(float x, float y) {
+	public Box() {
+	}
+
+	public Box(float x, float y) {
 		w = random(4, 16);
 		h = random(4, 16);
 		// Add the box to the box2d world
@@ -181,5 +202,14 @@ class Box {
 		// Give it some initial random velocity
 		body.setLinearVelocity(new Vec2(random(-5, 5), random(2, 5)));
 		body.setAngularVelocity(random(-5, 5));
+	}
+}
+
+class Pt {
+	public float x, y;
+	
+	public Pt(float _x, float _y) {
+		x = _x;
+		y = _y;
 	}
 }
