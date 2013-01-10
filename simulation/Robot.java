@@ -68,8 +68,8 @@ public class Robot {
 
 		body = box2d.createBody(bd);
 		body.createFixture(fd);
-		//body.setLinearDamping(0.5f);
-		//body.setAngularDamping(0.5f);
+		body.setLinearDamping(0.1f);
+		body.setAngularDamping(0.5f);
 	}
 
 	public float getWidth() { return w; }
@@ -93,12 +93,17 @@ public class Robot {
 
 		public void affect(Body b) {
 			if(speed>0.001) {
-				float a = b.getAngle();
+				/*float a = b.getAngle();
 				Vec2 force = new Vec2((float)(speed*Math.cos(a)), (float)(speed*Math.sin(a)));
 
 				float rotx = (float)(x*Math.cos(a)-y*Math.sin(a));
 				float roty = (float)(x*Math.sin(a)+y*Math.cos(a));
-				Vec2 point = new Vec2(b.getPosition().y+rotx, b.getPosition().y+roty);
+				//if(y<0) System.out.println(force.x+", "+force.y);
+				Vec2 point = new Vec2(b.getWorldCenter().x+rotx, b.getWorldCenter().y+roty);
+				b.applyForce(force, point);*/
+
+				Vec2 force = b.getWorldVector(new Vec2(1, 0));
+				Vec2 point = b.getWorldPoint(new Vec2(x, y));
 				b.applyForce(force, point);
 			}
 		}

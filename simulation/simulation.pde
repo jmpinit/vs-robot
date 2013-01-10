@@ -81,7 +81,7 @@ void draw() {
 		rectMode(CENTER);
 		pushMatrix();
 		translate(pos.x, pos.y);
-		rotate(a);
+		rotate(-a);
 		fill(175);
 		stroke(0);
 		strokeWeight(1);
