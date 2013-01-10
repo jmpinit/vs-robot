@@ -36,6 +36,14 @@ public class Robot {
 	public void update() {
 		leftMotor.affect(body);
 		rightMotor.affect(body);	
+
+		//apply friction force
+		Vec2 vel = body.getLinearVelocity();
+		//get horizontal component
+		float moveAngle = (float)Math.atan2(vel.y, vel.x);
+		float faceAngle = body.getAngle();
+		float newspeed = vel.length()*(float)Math.cos(moveAngle-faceAngle);
+		body.setLinearVelocity(new Vec2((float)(newspeed*Math.cos(faceAngle)), (float)(newspeed*Math.sin(faceAngle))));
 	}
 
 	public void left(float val) {
@@ -93,15 +101,6 @@ public class Robot {
 
 		public void affect(Body b) {
 			if(speed>0.001) {
-				/*float a = b.getAngle();
-				Vec2 force = new Vec2((float)(speed*Math.cos(a)), (float)(speed*Math.sin(a)));
-
-				float rotx = (float)(x*Math.cos(a)-y*Math.sin(a));
-				float roty = (float)(x*Math.sin(a)+y*Math.cos(a));
-				//if(y<0) System.out.println(force.x+", "+force.y);
-				Vec2 point = new Vec2(b.getWorldCenter().x+rotx, b.getWorldCenter().y+roty);
-				b.applyForce(force, point);*/
-
 				Vec2 force = b.getWorldVector(new Vec2(1, 0));
 				Vec2 point = b.getWorldPoint(new Vec2(x, y));
 				b.applyForce(force, point);
