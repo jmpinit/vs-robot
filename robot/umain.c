@@ -9,12 +9,8 @@ int usetup (void) {
 // Entry point to contestant code.
 int umain (void) {
     while (1) {
-		if(digital_read(0)) {
-			motor_set_vel(0, 255);
-			printf("switch triggered\n");
-			pause(2000);
-			motor_set_vel(0, 0);
-		}
+		motor_set_vel(0, digital_read(0)*frob_read_range(0, 1023));
+		motor_set_vel(1, -digital_read(1)*frob_read_range(0, 1023));
 	}
 
     return 0;
