@@ -3,21 +3,30 @@
 #define GYRO_PORT		8
 #define LSB_US_PER_DEG	1400000
 
+void led_set(unsigned char led, unsigned char state) {
+	if(led<3) {
+		if(state)
+			PORTD |= 1<<(led+2);
+		else
+			PORTD &= ~(1<<(led+2));
+	}
+}
+
 int usetup (void) {
-	printf("\nPlace robot,    press go.");
-	go_click ();
-	printf ("\nStabilizing...");
-	pause (500);
-	printf ("\nCalibrating     offset...\n");
-	gyro_init (GYRO_PORT, LSB_US_PER_DEG, 500L);
+	//create outputs for LEDs
+	DDRD = (1<<PD2)|(1<<PD3)|(1<<PD4);
 
     return 0;
 }
 
 int umain (void) {
     while (1) {
-		printf ("\ntheta = %.2f", gyro_get_degrees());
-        pause (100);		
+		for(int i=0; i<3; i++) {
+			led_set(i, 1);
+			pause(100);
+			led_set(i, 0);
+			pause(100);
+		}
 	}
 
     return 0;
