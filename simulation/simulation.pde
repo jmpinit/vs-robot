@@ -10,17 +10,18 @@ ArrayList<Robot> robots;
 
 Pt[] lvl_outer, lvl_inner;
 
+Vec2 target;
+
 void setup() {
 	size(640, 480);
-	smooth();
+	ellipseMode(CENTER);
 
-	// Initialize box2d physics and create the world
+	//create the box2d world
 	box2d = new PBox2D(this);
 	box2d.createWorld();
-	// We are setting a custom gravity
-	box2d.setGravity(0, 0);
+	box2d.setGravity(0, 0);	//no gravity for top-down perspective
 
-	// Create ArrayLists	
+	//storage of world entities
 	walls = new ArrayList<Wall>();
 	robots = new ArrayList<Robot>();
 
@@ -28,19 +29,28 @@ void setup() {
 	lvl_outer = new Pt[6];
 	lvl_inner = new Pt[6];
 	
-	lvl_outer[0] = new Pt(125, 0);
-	lvl_outer[1] = new Pt(375, 0);
-	lvl_outer[5] = new Pt(0, 217);
-	lvl_outer[2] = new Pt(500, 217);
-	lvl_outer[4] = new Pt(125, 434);
-	lvl_outer[3] = new Pt(375, 434);
+	lvl_outer[0] = new Pt(-125, -217);
+	lvl_outer[1] = new Pt(125, -217);
+	lvl_outer[5] = new Pt(-250, 0);
+	lvl_outer[2] = new Pt(250, 0);
+	lvl_outer[4] = new Pt(-125, 217);
+	lvl_outer[3] = new Pt(125, 217);
 
-	lvl_inner[0] = new Pt(250, 162);
-	lvl_inner[1] = new Pt(298, 190);
-	lvl_inner[2] = new Pt(298, 244);
-	lvl_inner[3] = new Pt(250, 272);
-	lvl_inner[4] = new Pt(202, 244);
-	lvl_inner[5] = new Pt(202, 190);
+	lvl_inner[0] = new Pt(0, -55);
+	lvl_inner[1] = new Pt(48, -27);
+	lvl_inner[2] = new Pt(48, 27);
+	lvl_inner[3] = new Pt(0, 55);
+	lvl_inner[4] = new Pt(-48, 27);
+	lvl_inner[5] = new Pt(-48, -27);
+
+	//center level
+	for(int i=0; i<lvl_outer.length; i++) {
+		lvl_outer[i].x += width/2;
+		lvl_outer[i].y += height/2;
+		
+		lvl_inner[i].x += width/2;
+		lvl_inner[i].y += height/2;
+	}
 
 	for(int i=0; i<lvl_outer.length-1; i++)
 		walls.add(new Wall(lvl_outer[i].x, lvl_outer[i].y, lvl_outer[i+1].x, lvl_outer[i+1].y));
@@ -50,20 +60,32 @@ void setup() {
 		walls.add(new Wall(lvl_inner[i].x, lvl_inner[i].y, lvl_inner[i+1].x, lvl_inner[i+1].y));
 	walls.add(new Wall(lvl_inner[lvl_inner.length-1].x, lvl_inner[lvl_inner.length-1].y, lvl_inner[0].x, lvl_inner[0].y));
 
+	//add a nav target for testing
+	target = new Vec2(0, 0);
+
 	//add a robot for testing!
-	Robot robby = new Robot(box2d, width/2, height/2);
+	Robot robby = new BasicRobot(box2d, width/2+64, height/2);
 	robots.add(robby);
 }
 
 void draw() {
 	background(255);
 
-	//let the robots think
-	for(Robot r: robots)
+	//let the robots think and act
+	for(Robot r: robots) {
+		r.think();
 		r.update();
+	}
 
 	//increment simulation
 	box2d.step();
+
+	//**** RENDERING ****
+	//draw the target
+	noStroke();
+	fill(255, 0, 0);
+	Vec2 pixelPos = box2d.coordWorldToPixels(target);
+	ellipse(pixelPos.x, pixelPos.y, 16, 16);
 
 	//draw the walls
 	for(Wall w: walls)
@@ -92,19 +114,9 @@ void draw() {
 	}
 }
 
-void keyPressed() {
-	if(key=='q') {
-		robots.get(0).left(0.5f);
-	} else if(key=='e') {
-		robots.get(0).right(0.5f);
-	} else if(key=='a') {
-		robots.get(0).left(-0.5f);
-	} else if(key=='d') {
-		robots.get(0).right(-0.5f);
-	} else {
-		robots.get(0).left(0.0f);
-		robots.get(0).right(0.0f);
-	}
+void mousePressed() {
+	target.set(box2d.coordPixelsToWorld(mouseX, mouseY));
+	((BasicRobot)robots.get(0)).target.set(target);
 }
 
 class Wall {
