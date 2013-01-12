@@ -1,15 +1,13 @@
 #include <joyos.h>
 
+#define TRUE	1
+#define FALSE	0
+
 #define GYRO_PORT		8
 #define LSB_US_PER_DEG	1400000
 
 #define MOTOR_LEFT	0
 #define MOTOR_RIGHT	1
-
-void led_init(void) {
-	//create outputs for LEDs
-	DDRD = (1<<PD2)|(1<<PD3)|(1<<PD4);
-}
 
 void led_set(unsigned char led, unsigned char state) {
 	if(led<3) {
@@ -20,8 +18,17 @@ void led_set(unsigned char led, unsigned char state) {
 	}
 }
 
+void led_init(void) {
+	//create outputs for LEDs
+	DDRD = (1<<PD2)|(1<<PD3)|(1<<PD4);
+	//turn off the LEDS
+	for(unsigned char i=0; i<3; i++) led_set(i, FALSE);
+}
+
 int usetup(void) {
 	led_init();
+
+	led_set(0, TRUE);
 
 	printf("\nPlace robot,    press go.");
 	go_click ();
@@ -29,6 +36,8 @@ int usetup(void) {
 	pause (500);
 	printf ("\nCalibrating     offset...\n");
 	gyro_init (GYRO_PORT, LSB_US_PER_DEG, 500L);
+
+	led_set(1, TRUE);
 
 	return 0;
 }
@@ -48,20 +57,45 @@ float bound(float val, float max) {
 	return val;
 }
 
+//TODO put PID stuff in a struct for cleanliness
+float pre_error = 0;
 int umain (void) {
+	led_set(2, TRUE);
+	pause(2000);
+
 	float desired = gyro_get_degrees();
+	pre_error = desired;
 
     while(1) {
-		int motor_bias = frob_read_range(0, 255);
-		//motor_set_vel(0, frob_read_range(0, 255)-128);
-		//motor_set_vel(1, frob_read_range(0, 255)-128);
+		#define epsilon	0.1
+		#define dt		0.1
+		#define Kp		3.0
+		#define Kd		0.5
+		#define Ki		0.1
+
+		float pre_error = 0;
+		static float integral = 0;
+		float derivative;
+		float output;
+
+		//int motor_bias = frob_read_range(0, 255);
+		int motor_bias = 255;
+
 		float heading = gyro_get_degrees();
 		float error = bound(desired - heading, 360.0);
 
-		printf("error is %d\n", error);
+		if(abs(error) > epsilon)
+			integral = integral + error*dt;
+		derivative = (error - pre_error)/dt;
+		output = Kp*error + Ki*integral + Kd*derivative;
 
-		motor_set_vel(MOTOR_LEFT, within(0, motor_bias + error, 255));
-		motor_set_vel(MOTOR_RIGHT, within(0, motor_bias - error, 255));
+		//Update error
+		pre_error = error;
+
+		motor_set_vel(MOTOR_LEFT, within(0, motor_bias + output, 255));
+		motor_set_vel(MOTOR_RIGHT, within(0, motor_bias - output, 255));
+
+		printf("output=%d", output);
 	}
 
     return 0;
