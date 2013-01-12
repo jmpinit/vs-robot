@@ -16,17 +16,15 @@ int usetup (void) {
 	//create outputs for LEDs
 	DDRD = (1<<PD2)|(1<<PD3)|(1<<PD4);
 
+	encoder_reset(24);
+
     return 0;
 }
 
 int umain (void) {
     while (1) {
-		for(int i=0; i<3; i++) {
-			led_set(i, 1);
-			pause(100);
-			led_set(i, 0);
-			pause(100);
-		}
+		printf("encoder=%d\n", encoder_read(24));
+		pause(100);
 	}
 
     return 0;
