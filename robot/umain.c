@@ -1,4 +1,5 @@
 #include <joyos.h>
+#include "pid_linear.c"
 
 #define TRUE	1
 #define FALSE	0
@@ -64,33 +65,13 @@ int umain (void) {
 	pause(2000);
 
 	float desired = gyro_get_degrees();
-	pre_error = desired;
 
     while(1) {
-		#define epsilon	0.1
-		#define dt		0.1
-		#define Kp		3.0
-		#define Kd		0.5
-		#define Ki		0.1
-
-		float pre_error = 0;
-		static float integral = 0;
-		float derivative;
-		float output;
-
 		//int motor_bias = frob_read_range(0, 255);
 		int motor_bias = 255;
 
 		float heading = gyro_get_degrees();
-		float error = bound(desired - heading, 360.0);
-
-		if(abs(error) > epsilon)
-			integral = integral + error*dt;
-		derivative = (error - pre_error)/dt;
-		output = Kp*error + Ki*integral + Kd*derivative;
-
-		//Update error
-		pre_error = error;
+		float output = pid_linear_calc(heading, desired);
 
 		motor_set_vel(MOTOR_LEFT, within(0, motor_bias + output, 255));
 		motor_set_vel(MOTOR_RIGHT, within(0, motor_bias - output, 255));
