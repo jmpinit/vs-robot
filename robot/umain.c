@@ -13,6 +13,15 @@
 #define MOTOR_LEFT	0
 #define MOTOR_RIGHT	1
 
+pid_data pid_linear_settings = {
+	0.1,
+	0.1,
+	3.0,
+	0.5,
+	0.1,
+	0
+};
+
 void led_set(unsigned char led, unsigned char state) {
 	if(led<3) {
 		if(state)
@@ -42,17 +51,7 @@ int usetup(void) {
 	return 0;
 }
 
-float pre_error = 0;
 int umain (void) {
-	pid_data pid_linear_settings = {
-		0.1,
-		0.1,
-		3.0,
-		0.5,
-		0.1,
-		0
-	};
-
 	led_set(1, TRUE);	//about to start!
 	pause(2000);
 	led_set(2, TRUE);	//we're on our way
