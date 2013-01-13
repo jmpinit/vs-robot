@@ -8,6 +8,8 @@ public abstract class Robot {
 	public Body body;
 	protected float w, h;
 
+	public Vec2 target;
+
 	//robot parts
 	protected Motor leftMotor, rightMotor;
 	protected Motor motors[];
@@ -18,7 +20,6 @@ public abstract class Robot {
 
 		w = 16;
 		h = 16;
-
 
 		//make the robot's body and add to Box2D world
 		makeBody(new Vec2(x, y), w, h);
@@ -74,7 +75,7 @@ public abstract class Robot {
 		body = box2d.createBody(bd);
 		body.createFixture(fd);
 		body.setLinearDamping(0.1f);
-		body.setAngularDamping(0.5f);
+		body.setAngularDamping(0.8f);
 	}
 
 	//**** API ****
@@ -134,9 +135,9 @@ public abstract class Robot {
 	//really models a motor connected to a wheel
 	//directly impacts movement
 	class Motor {
-		private static final float scale = 0.001f;
-		private static final float torque = 1;
-		private static final float maxspeed = 1023;
+		private static final float scale = 0.01f;
+		private static final float torque = 1;		//TODO affect strength of force
+		private static final float maxspeed = 255;
 
 		private float x, y;
 		private float speed;
@@ -153,6 +154,8 @@ public abstract class Robot {
 				Vec2 force = b.getWorldVector(new Vec2(speed*scale, 0));
 				Vec2 point = b.getWorldPoint(new Vec2(x, y));
 				b.applyForce(force, point);
+			} else {
+				//TODO brake
 			}
 		}
 
@@ -173,7 +176,7 @@ public abstract class Robot {
 		}
 
 		public float getBearing() {
-			return body.getAngle();
+			return bound(body.getAngle(), (float)(2.0*Math.PI));
 		}
 
 		public boolean isRoundStarted() {
@@ -186,6 +189,18 @@ public abstract class Robot {
 			//TODO add round logic
 			//for now round is always going
 			return false;
+		}
+
+		private float bound(float val, float max) {
+			if(val<0) {
+				while(val<0)
+					val += max;
+			} else if(val>max) {
+				while(val>max)
+					val -= max;
+			}
+
+			return val;
 		}
 	}
 }

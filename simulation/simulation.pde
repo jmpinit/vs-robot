@@ -8,13 +8,14 @@ PBox2D box2d;
 ArrayList<Wall> walls;
 ArrayList<Robot> robots;
 
-Pt[] lvl_outer, lvl_inner;
+Vec2[] lvl_outer, lvl_inner;
 
 Vec2 target;
 
 void setup() {
 	size(640, 480);
 	ellipseMode(CENTER);
+	//frameRate(5);
 
 	//create the box2d world
 	box2d = new PBox2D(this);
@@ -26,22 +27,21 @@ void setup() {
 	robots = new ArrayList<Robot>();
 
 	//load the level
-	lvl_outer = new Pt[6];
-	lvl_inner = new Pt[6];
+	/*lvl_outer = new Vec2[6];
 	
-	lvl_outer[0] = new Pt(-125, -217);
-	lvl_outer[1] = new Pt(125, -217);
-	lvl_outer[5] = new Pt(-250, 0);
-	lvl_outer[2] = new Pt(250, 0);
-	lvl_outer[4] = new Pt(-125, 217);
-	lvl_outer[3] = new Pt(125, 217);
+	lvl_outer[0] = new Vec2(-125, -217);
+	lvl_outer[1] = new Vec2(125, -217);
+	lvl_outer[5] = new Vec2(-250, 0);
+	lvl_outer[2] = new Vec2(250, 0);
+	lvl_outer[4] = new Vec2(-125, 217);
+	lvl_outer[3] = new Vec2(125, 217);
 
-	lvl_inner[0] = new Pt(0, -55);
-	lvl_inner[1] = new Pt(48, -27);
-	lvl_inner[2] = new Pt(48, 27);
-	lvl_inner[3] = new Pt(0, 55);
-	lvl_inner[4] = new Pt(-48, 27);
-	lvl_inner[5] = new Pt(-48, -27);
+	lvl_inner[0] = new Vec2(0, -55);
+	lvl_inner[1] = new Vec2(48, -27);
+	lvl_inner[2] = new Vec2(48, 27);
+	lvl_inner[3] = new Vec2(0, 55);
+	lvl_inner[4] = new Vec2(-48, 27);
+	lvl_inner[5] = new Vec2(-48, -27);
 
 	//center level
 	for(int i=0; i<lvl_outer.length; i++) {
@@ -59,13 +59,15 @@ void setup() {
 	for(int i=0; i<lvl_outer.length-1; i++)
 		walls.add(new Wall(lvl_inner[i].x, lvl_inner[i].y, lvl_inner[i+1].x, lvl_inner[i+1].y));
 	walls.add(new Wall(lvl_inner[lvl_inner.length-1].x, lvl_inner[lvl_inner.length-1].y, lvl_inner[0].x, lvl_inner[0].y));
-
+	*/
 	//add a nav target for testing
 	target = new Vec2(0, 0);
 
 	//add a robot for testing!
-	Robot robby = new BasicRobot(box2d, width/2+64, height/2);
-	robots.add(robby);
+	Robot enemy = new BasicRobot(box2d, width/2+64, height/2);
+	Robot ally = new PIDbot(box2d, width/2-64, height/2);
+	//robots.add(enemy);
+	robots.add(ally);
 }
 
 void draw() {
@@ -116,7 +118,8 @@ void draw() {
 
 void mousePressed() {
 	target.set(box2d.coordPixelsToWorld(mouseX, mouseY));
-	((BasicRobot)robots.get(0)).target.set(target);
+	for(Robot r: robots)
+		r.target.set(target);
 }
 
 class Wall {
@@ -241,14 +244,5 @@ class Box {
 		// Give it some initial random velocity
 		body.setLinearVelocity(new Vec2(random(-5, 5), random(2, 5)));
 		body.setAngularVelocity(random(-5, 5));
-	}
-}
-
-class Pt {
-	public float x, y;
-	
-	public Pt(float _x, float _y) {
-		x = _x;
-		y = _y;
 	}
 }

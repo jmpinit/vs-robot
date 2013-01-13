@@ -2,11 +2,8 @@ import pbox2d.*;
 import org.jbox2d.collision.shapes.*;
 import org.jbox2d.common.*;
 import org.jbox2d.dynamics.*;
-import pbox2d.*;
 
 public class BasicRobot extends Robot {
-	public Vec2 target;
-	
 	public BasicRobot(PBox2D box2d, float _x, float _y) {
 		super(box2d, _x, _y);
 
@@ -33,7 +30,6 @@ public class BasicRobot extends Robot {
 		float angleTarget = (float)Math.atan2(target.y-loc.y, target.x-loc.x); //calc angle to target
 		float angleFacing = vps.getBearing();
 		float error = (float)Math.abs((angleTarget-angleFacing+Math.PI)%(2.0f*Math.PI));
-		//System.out.println(error);
 
 		motor_set_vel(1, (int)(1023-error/(2.0*Math.PI)*1023));
 		motor_set_vel(0, (int)(error/(2.0*Math.PI)*1023));
