@@ -1,5 +1,8 @@
 #include <joyos.h>
+
+#include "util_math.h"
 #include "pid.h"
+#include "util_vps.h"
 
 #define TRUE	1
 #define FALSE	0
@@ -37,21 +40,6 @@ int usetup(void) {
 	led_set(0, TRUE); //first LED indicates calibration completed
 
 	return 0;
-}
-
-int within(int min, int val, int max) {
-	if(val<min) return min;
-	if(val>max) return max;
-	return val;
-}
-
-float bound(float val, float max) {
-	if(val<max) return val;
-	
-	while(val>max)
-		val -= max;
-
-	return val;
 }
 
 float pre_error = 0;
