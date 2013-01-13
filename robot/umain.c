@@ -1,4 +1,5 @@
 #include <joyos.h>
+#include <math.h>
 
 #include "util_math.h"
 #include "pid.h"
@@ -51,24 +52,34 @@ int usetup(void) {
 	return 0;
 }
 
+//attempts to take robot to VPS coordinate
+void move_to(int x, int y) {
+	pt loc = vps_pos_us();
+
+	float desired = atan2(y-loc.y, x-loc.x);
+
+	//move in that direction until we are on top of it
+    while(dist(loc.x, loc.y, x, y)>16) {
+		int motor_bias = 245;
+
+		float heading = vps_angle_current(); //TODO fuse VPS and gyro data
+		float output = pid_calc(pid_linear_settings, heading, desired);
+
+		motor_set_vel(MOTOR_LEFT, within(0, motor_bias + output, 255));
+		motor_set_vel(MOTOR_RIGHT, within(0, motor_bias - output, 255));
+		
+		//get our new location
+		loc = vps_pos_us();
+	}
+}
+
 int umain (void) {
 	led_set(1, TRUE);	//about to start!
 	pause(2000);
 	led_set(2, TRUE);	//we're on our way
 
-	float desired = gyro_get_degrees();
-
     while(1) {
-		//int motor_bias = frob_read_range(0, 255);
-		int motor_bias = 255;
-
-		float heading = gyro_get_degrees();
-		float output = pid_calc(pid_linear_settings, heading, desired);
-
-		motor_set_vel(MOTOR_LEFT, within(0, motor_bias + output, 255));
-		motor_set_vel(MOTOR_RIGHT, within(0, motor_bias - output, 255));
-
-		printf("output=%d", output);
+		move_to(0, 0);	
 	}
 
     return 0;
