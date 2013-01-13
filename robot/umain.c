@@ -14,6 +14,8 @@
 #define MOTOR_LEFT	0
 #define MOTOR_RIGHT	1
 
+#define MAX_SPEEd	245
+
 pid_data pid_linear_settings = {
 	0.1,
 	0.1,
@@ -60,7 +62,7 @@ void move_to(int x, int y) {
 
 	//move in that direction until we are on top of it
     while(dist(loc.x, loc.y, x, y)>16) {
-		int motor_bias = 245;
+		int motor_bias = MAX_SPEED;
 
 		float heading = vps_angle_current(); //TODO fuse VPS and gyro data
 		float output = pid_calc(pid_linear_settings, heading, desired);
