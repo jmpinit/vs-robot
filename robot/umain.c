@@ -14,7 +14,7 @@
 #define MOTOR_LEFT	0
 #define MOTOR_RIGHT	1
 
-#define MAX_SPEEd	245
+#define MAX_SPEED	245
 
 pid_data pid_linear_settings = {
 	0.1,
@@ -81,10 +81,18 @@ int umain (void) {
 	led_set(2, TRUE);	//we're on our way
 
     while(1) {
-		pt loc = vps_pos_us();
-		float heading = vps_angle_current();
-		printf("(%d, %d) @ %f degrees", loc.x, loc.y, heading);
+		//pt loc = vps_pos_us();
+		//float heading = vps_angle_current();
+		copy_objects();
+		int heading = game.coords[0].theta;
+		printf("(%d, %d) @ %d degrees\n", game.coords[0].x, game.coords[0].y, heading);
 		pause(100);
+
+		//movement test
+		/*move_to(-50, -50);
+		move_to(50, -50);
+		move_to(50, 50);
+		move_to(-50, 50);*/
 	}
 
     return 0;
