@@ -29,16 +29,12 @@ void led_init(void) {
 int usetup(void) {
 	led_init();
 
-	led_set(0, TRUE);
+	//set our team # for the VPS
+	extern volatile uint8_t robot_id;
+	robot_id = 12;
 
-	printf("\nPlace robot,    press go.");
-	go_click ();
-	printf ("\nStabilizing...");
-	pause (500);
-	printf ("\nCalibrating     offset...\n");
 	gyro_init (GYRO_PORT, LSB_US_PER_DEG, 500L);
-
-	led_set(1, TRUE);
+	led_set(0, TRUE); //first LED indicates calibration completed
 
 	return 0;
 }
@@ -58,7 +54,6 @@ float bound(float val, float max) {
 	return val;
 }
 
-//TODO put PID stuff in a struct for cleanliness
 float pre_error = 0;
 int umain (void) {
 	pid_data pid_linear_settings = {
@@ -70,8 +65,9 @@ int umain (void) {
 		0
 	};
 
-	led_set(2, TRUE);
+	led_set(1, TRUE);	//about to start!
 	pause(2000);
+	led_set(2, TRUE);	//we're on our way
 
 	float desired = gyro_get_degrees();
 
