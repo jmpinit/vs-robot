@@ -79,7 +79,10 @@ int umain (void) {
 	led_set(2, TRUE);	//we're on our way
 
     while(1) {
-		move_to(0, 0);	
+		pt loc = vps_pos_us();
+		float heading = vps_angle_current();
+		printf("(%d, %d) @ %f degrees", loc.x, loc.y, heading);
+		pause(100);
 	}
 
     return 0;
