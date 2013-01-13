@@ -3,7 +3,9 @@
 
 float vps_angle_current(void) {
 	copy_objects();
-	return game.coords[0].theta;	
+	float val = game.coords[0].theta;
+	val /= 5.68888888889;	//convert to degrees
+	return val;
 }
 
 pt vps_pos_us(void) {
