@@ -1,5 +1,5 @@
 #include <joyos.h>
-#include "pid_linear.c"
+#include "pid.h"
 
 #define TRUE	1
 #define FALSE	0
@@ -61,6 +61,15 @@ float bound(float val, float max) {
 //TODO put PID stuff in a struct for cleanliness
 float pre_error = 0;
 int umain (void) {
+	pid_data pid_linear_settings = {
+		0.1,
+		0.1,
+		3.0,
+		0.5,
+		0.1,
+		0
+	};
+
 	led_set(2, TRUE);
 	pause(2000);
 
@@ -71,7 +80,7 @@ int umain (void) {
 		int motor_bias = 255;
 
 		float heading = gyro_get_degrees();
-		float output = pid_linear_calc(heading, desired);
+		float output = pid_calc(pid_linear_settings, heading, desired);
 
 		motor_set_vel(MOTOR_LEFT, within(0, motor_bias + output, 255));
 		motor_set_vel(MOTOR_RIGHT, within(0, motor_bias - output, 255));
