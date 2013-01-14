@@ -10,7 +10,9 @@ float vps_angle_current(void) {
 
 pt vps_pos_us(void) {
 	copy_objects();
-	pt loc = { game.coords[0].x, game.coords[0].y };
+	pt loc;
+	loc.x = game.coords[0].x;
+	loc.y = game.coords[0].y;
 	return loc;
 }
 

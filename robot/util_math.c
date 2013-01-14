@@ -1,3 +1,4 @@
+#include <math.h>
 #include "util_math.h"
 
 int within(int min, int val, int max) {
@@ -6,18 +7,12 @@ int within(int min, int val, int max) {
 	return val;
 }
 
-float bound(float val, float max) {
-	if(val<max) return val;
-	
-	while(val>max)
-		val -= max;
-
+float bound(float val, float min, float max) {
+	while(val<min) val += (max-min);
+	while(val>max) val -= (max-min);
 	return val;
 }
 
-int dist(int x1, int y1, int x2, int y2) {
-	int relX = x2-x1;
-	int relY = y2-y1;
-
-	return sqrt(relX*relX+relY*relY);
+float distance(int x1, int y1, int x2, int y2) {
+	return sqrt(pow(x2-x1, 2)+pow(y2-y1, 2));
 }
