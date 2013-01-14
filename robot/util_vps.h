@@ -3,8 +3,13 @@
 
 #include "util_math.h"
 
-float vps_angle_current(void);
-pt vps_pos_us(void);
-pt vps_pos_them(void);
+#define vps_update()	copy_objects()
+#define vps_x			game.coords[0].x
+#define vps_y			game.coords[0].y
+#define vps_heading		game.coords[0].theta
+#define vps_target_x	game.coords[1].x
+#define vps_target_y	game.coords[1].y
+
+float vps_get_degrees(void);
 
 #endif
