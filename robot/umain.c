@@ -18,9 +18,6 @@
 
 float gyro_transform;
 
-int vps_vals[3];
-float vps_avg;
-
 pid_data pid_linear_settings = {
 	0.1,
 	0.1,
@@ -29,22 +26,6 @@ pid_data pid_linear_settings = {
 	0.05,
 	0
 };
-
-void led_set(unsigned char led, unsigned char state) {
-	if(led<3) {
-		if(state)
-			PORTD |= 1<<(led+2);
-		else
-			PORTD &= ~(1<<(led+2));
-	}
-}
-
-void led_init(void) {
-	//create outputs for LEDs
-	DDRD = (1<<PD2)|(1<<PD3)|(1<<PD4);
-	//turn off the LEDS
-	for(unsigned char i=0; i<3; i++) led_set(i, FALSE);
-}
 
 void vps_track(void) {
 	float total = 0;
