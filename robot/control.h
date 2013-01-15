@@ -9,10 +9,12 @@
 #define ENCODER_CENTER	3
 
 typedef struct {
-	float current;
+	float speed;
 	int target;
+	float heading;
+
 	float slope;
-} ramper_settings;
+} ctrl_data;
 
 typedef struct {
 	float epsilon;
@@ -22,10 +24,11 @@ typedef struct {
 	float pre_error;
 } pid_data;
 
-static int* target_speed;
-static float* speed;
+int motor_controller(void);
+void ctrl_set_speed(int speed);
+void ctrl_set_heading(float heading);
+void ctrl_init(void);
 
-int ramper_thread(void);
 void move_to(int x, int y);
 float pid_calc(pid_data prefs, float current, float target);
 

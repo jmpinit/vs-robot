@@ -9,6 +9,7 @@
 #define MAX_SPEED	245	//the fastest the robot will go
 #define MIN_SPEED	96	//speed of approach
 
+
 //pid settings for moving straight
 pid_data pid_linear_settings = {
 	0.1,
@@ -135,4 +136,46 @@ float pid_calc(pid_data prefs, float current, float target) {
 	prefs.pre_error = error;
 
 	return output;
+}
+
+/*
+   Motor control abstraction layer
+*/
+
+ctrl_data *ctrl_settings;
+void ctrl_init(void) {
+	create_thread(&motor_controller, STACK_DEFAULT, 0, "ramper_thread");
+
+	//init the settings
+	ctrl_data settings;
+	ctrl_settings = &settings;
+}
+
+void ctrl_set_heading(float heading) {
+	ctrl_settings->heading = heading;
+}
+
+void ctrl_set_speed(int speed) {
+	ctrl_settings->speed = speed;
+}
+
+int motor_controller(void) {
+	for(;;) {
+		float heading = gyro_absolute();
+		float output = pid_calc(pid_linear_settings, heading, ctrl_settings->heading);
+
+		if(abs(bound(-180, heading-ctrl_settings->heading, 180))<60) {
+			output /= 4.0;
+			motor_set_vel(MOTOR_LEFT, ctrl_settings->speed + output);
+			motor_set_vel(MOTOR_LEFT, ctrl_settings->speed - output);
+		} else {
+			motor_set_vel(MOTOR_LEFT, output);
+			motor_set_vel(MOTOR_LEFT, output);
+		}
+
+
+		yield();
+	}
+
+	return 0;
 }
