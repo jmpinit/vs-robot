@@ -47,13 +47,10 @@ void move_to(int x, int y) {
     do {
 		vps_update();
 
-		/*
-		   Distance handling
-		*/
+		//keep track of distance to target
 		if(!vps_is_shit())
 			current_dist = distance(vps_x, vps_y, x, y);
 		else
-			//TODO use encoders here
 			current_dist = last_distance;
 
 		tick_distance(current_dist);
@@ -63,19 +60,8 @@ void move_to(int x, int y) {
 		ctrl_set_heading(angle_to_target(x, y));
 		ctrl_set_speed(frob_read_range(0, MAX_SPEED));
 
-		/*
-		#define DIST_CLOSE 1500.0
-		if(current_dist>DIST_CLOSE) 
-			//far from target -> go fast
-			*target_speed = frob_read_range(0, MAX_SPEED);
-		else
-			//getting close -> slow down but not all the way
-			*target_speed = MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE;
-			*/
-
 		//correct course
-		if((encoder_read(ENCODER_CENTER) % CHECK_DIST) == 0) 
-		{
+		if(encoder_read(ENCODER_CENTER) % CHECK_DIST == 0) {
 			while(vps_is_shit()) asm volatile("NOP;");
 			gyro_zero();
 			ctrl_set_heading(angle_to_target(x, y));
