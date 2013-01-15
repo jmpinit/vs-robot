@@ -59,18 +59,24 @@ void move_to(int x, int y) {
 		last_distance = avg_distance();
 
 		//move towards the target
-		if(current_dist>DIST_CLOSE)
+		if(current_dist>DIST_CLOSE) {
 			ctrl_set_speed(frob_read_range(0, MAX_SPEED));
-		else
+		} else {
+			printf("app");
 			ctrl_set_speed(MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE);
+		}
 
 		//correct course
-		if(encoder_read(MOTOR_LEFT) % DIST_CHECK == 0) {
+		if(encoder_read(MOTOR_LEFT) > DIST_CHECK) {
+			encoder_reset(MOTOR_LEFT);
+
 			led_set(0, true); led_set(1, true); led_set(2, true);
 			while(vps_is_shit()) asm volatile("NOP;");
 			gyro_zero();
 			ctrl_set_heading(angle_to_target(x, y));
 			led_clear();
+
+			printf("chk");
 		}
 
 		yield();
