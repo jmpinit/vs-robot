@@ -63,7 +63,10 @@ int led_tick(void) {
 }
 
 int umain(void) {
+	#include "calibration/motor_test.c"
+
 	create_thread(&led_tick, STACK_DEFAULT, 0, "led_thread");
+	create_thread(&ramper_thread, STACK_DEFAULT, 0, "ramper_thread");
 
     while(1) {
 		/*motor_set_vel(MOTOR_LEFT, -255);
