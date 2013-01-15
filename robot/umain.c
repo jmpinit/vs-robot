@@ -44,10 +44,14 @@ int led_tick(void) {
 					led_set(0, false);
 					led_set(1, false);
 					led_set(2, false);
+					
+					ledstate = 1;
 				} else {
 					led_set(0, true);
 					led_set(1, true);
 					led_set(2, true);
+
+					ledstate = 0;
 				}
 			} else {
 				switch(ledstate%3) {
