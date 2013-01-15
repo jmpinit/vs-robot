@@ -5,10 +5,10 @@
 #include "control.h"
 #include "util_math.h"
 
-#define CHECK_DIST	128
+#define DIST_CHECK	512
+#define DIST_CLOSE	512
 #define MAX_SPEED	245	//the fastest the robot will go
 #define MIN_SPEED	96	//speed of approach
-
 
 //pid settings for moving straight
 pid_data pid_linear_settings = {
@@ -40,6 +40,7 @@ float angle_to_target(int x, int y) {
 	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
 }
 
+unsigned int time = 0;
 void move_to(int x, int y) {
 	float current_dist;
 	float last_distance = 0;
@@ -58,14 +59,17 @@ void move_to(int x, int y) {
 
 		//move towards the target
 		ctrl_set_heading(angle_to_target(x, y));
-		ctrl_set_speed(frob_read_range(0, MAX_SPEED));
+		ctrl_set_speed(MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE);
 
 		//correct course
-		if(encoder_read(ENCODER_LEFT) % CHECK_DIST == 0) {
+		if(time % DIST_CHECK == 0) {
 			while(vps_is_shit()) asm volatile("NOP;");
 			gyro_zero();
 			ctrl_set_heading(angle_to_target(x, y));
 		}
+
+		time++;
+
 		yield();
 	} while(current_dist>128);
 
@@ -108,12 +112,11 @@ void ctrl_set_heading(float heading) {
 
 void ctrl_set_speed(int speed) {
 	ctrl_settings.target = speed;
-	printf("speed changed\n");
 }
 
 int motor_controller(void) {
 	for(;;) {
-		printf("target=%d, speed=%f\n", ctrl_settings.target, ctrl_settings.speed);
+		//printf("target=%d, speed=%f\n", ctrl_settings.target, ctrl_settings.speed);
 
 		if(ctrl_settings.speed<ctrl_settings.target-ctrl_settings.slope) {
 			ctrl_settings.speed += ctrl_settings.slope;
@@ -132,7 +135,6 @@ int motor_controller(void) {
 		float output = pid_calc(pid_linear_settings, heading, ctrl_settings.heading);
 
 		if(abs(bound(-180, heading-ctrl_settings.heading, 180))<60) {
-			output /= 4.0;
 			motor_set_vel(MOTOR_LEFT, ctrl_settings.speed + output);
 			motor_set_vel(MOTOR_RIGHT, ctrl_settings.speed - output);
 		} else {

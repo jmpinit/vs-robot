@@ -34,7 +34,9 @@ int usetup(void) {
 }
 
 int umain(void) {
+	//led_start();
 	ctrl_init();
+	//create_thread(&loop, STACK_DEFAULT, 0, "main_thread");
 
 	while(1) {
 		vps_update();
