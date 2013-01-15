@@ -39,17 +39,31 @@ int led_tick(void) {
 		if(ledtimer>1000) {
 			led_clear();
 
-			switch(ledstate%3) {
-				case 0:
+			if(vps_is_shit()) {
+				if(ledstate==0) {
+					led_set(0, false);
+					led_set(1, false);
+					led_set(2, false);
+				} else {
 					led_set(0, true);
-					break;
-				case 1:
 					led_set(1, true);
-					break;
-				case 2:
 					led_set(2, true);
-					break;
+				}
+			} else {
+				switch(ledstate%3) {
+					case 0:
+						led_set(0, true);
+						break;
+					case 1:
+						led_set(1, true);
+						break;
+					case 2:
+						led_set(2, true);
+						break;
+				}
 			}
+
+
 			ledstate++;
 			ledtimer = 0;
 		} else {
