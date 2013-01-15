@@ -22,6 +22,9 @@ typedef struct {
 	float pre_error;
 } pid_data;
 
+static int* target_speed;
+static float* speed;
+
 int ramper_thread(void);
 void move_to(int x, int y);
 float pid_calc(pid_data prefs, float current, float target);
