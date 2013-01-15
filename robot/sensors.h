@@ -10,10 +10,9 @@
 #define vps_target_x	game.coords[1].x
 #define vps_target_y	game.coords[1].y
 
-static float gyro_transform = 0;
-
 float gyro_absolute(void);
 void gyro_zero(void);
 float vps_get_degrees(void);
+bool vps_is_shit(void);
 
 #endif

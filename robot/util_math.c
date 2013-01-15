@@ -7,7 +7,7 @@ int within(int min, int val, int max) {
 	return val;
 }
 
-float bound(float val, float min, float max) {
+float bound(float min, float val, float max) {
 	while(val<min) val += (max-min);
 	while(val>max) val -= (max-min);
 	return val;

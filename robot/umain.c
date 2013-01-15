@@ -20,8 +20,11 @@ int usetup(void) {
 	robot_id = 12;
 
 	//initialize the gyro
+	go_press();
+
 	gyro_init(GYRO_PORT, LSB_US_PER_DEG, 500L);
 	pause(100);
+	vps_update();
 	gyro_zero();
 
 	led_clear();
@@ -29,24 +32,55 @@ int usetup(void) {
 	return 0;
 }
 
-int umain (void) {
-	led_set(0, true);
-	pause(100);
-	led_set(1, true);	//about to start!
-	pause(100);
-	led_set(2, true);	//we're on our way
-	pause(100);
+int ledstate = 0;
+int ledtimer = 0;
+int led_tick(void) {
+	for(;;){
+		if(ledtimer>1000) {
+			led_clear();
+
+			switch(ledstate%3) {
+				case 0:
+					led_set(0, true);
+					break;
+				case 1:
+					led_set(1, true);
+					break;
+				case 2:
+					led_set(2, true);
+					break;
+			}
+			ledstate++;
+			ledtimer = 0;
+		} else {
+			ledtimer++;
+		}
+
+		yield(); //tell joyos this thread is done for now
+	}
+
+	return 0;
+}
+
+int umain(void) {
+	create_thread(&led_tick, STACK_DEFAULT, 0, "led_thread");
 
     while(1) {
+		/*motor_set_vel(MOTOR_LEFT, -255);
+		motor_set_vel(MOTOR_RIGHT, 255);
+		pause(500);
+		motor_set_vel(MOTOR_LEFT, 255);
+		motor_set_vel(MOTOR_RIGHT, -255);
+		pause(500);
+		motor_brake(MOTOR_LEFT);
+		motor_brake(MOTOR_RIGHT);*/
+
 		//movement test
 		while(1) {
-			printf("moving to first pt.");
 			vps_update();
 			move_to(vps_target_x, vps_target_y);
-			printf("i think i am there.");
 			motor_set_vel(0, 0);
 			motor_set_vel(1, 0);
-			pause(1000);
 		}
 	}
 

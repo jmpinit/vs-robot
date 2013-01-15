@@ -6,7 +6,7 @@
 #include "util_math.h"
 
 #define MAX_SPEED	245	//the fastest the robot will go
-#define DIST_CLOSE	512	//where to start looking for target
+#define MIN_SPEED	96	//speed of approach
 
 //pid settings for moving straight
 pid_data pid_linear_settings = {
@@ -18,66 +18,103 @@ pid_data pid_linear_settings = {
 	0
 };
 
+#define DIST_HIST	4
+int distances[DIST_HIST];
+int avg_distance(void) {
+	float total = 0;
+	for(unsigned char i=0; i<DIST_HIST; i++)
+		total += distances[i];
+	return total/((float)(DIST_HIST));
+}
+
+void tick_distance(int d) {
+	//move back history
+	for(unsigned char i=DIST_HIST-1; i>0; i--)
+		distances[i] = distances[i-1];
+	distances[0] = d;
+}
+
+float angle_to_target(int x, int y) {
+	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
+}
+
 void move_to(int x, int y) {
-	vps_update();
-
-	//find the direction we need to go (-180 to 180)
-	float desired = (atan2(y-vps_y, x-vps_x)/M_PI)*180;
-	printf("angle to target is %f degrees", desired);
-
+	float desired = 0;
 	float current_dist;
-	int old_x = vps_x;
-	int old_y = vps_y;
+	float last_distance = 0;
+	bool turning = false;
 
     do {
 		vps_update();
 
-		current_dist = distance(vps_x, vps_y, x, y);
+		printf("(%d, %d)\n", vps_x, vps_y);
+
+		if(!vps_is_shit())
+			current_dist = distance(vps_x, vps_y, x, y);
+		else
+			//TODO use encoders here
+			current_dist = last_distance;
+
+		tick_distance(current_dist);
+
+		//check if we need to reorient
+		if(avg_distance()>last_distance && !turning) {
+			//stop the robot so the VPS lag goes to zero
+			for(int i=frob_read_range(0, MAX_SPEED); i>=0; i--) {
+				motor_set_vel(MOTOR_LEFT, i);
+				motor_set_vel(MOTOR_RIGHT, i);
+				pause(1);
+			}
+			pause(100);
+
+			//get rid of gyro drift and find the target again
+			while(vps_is_shit()) asm volatile("NOP;");
+			gyro_zero();
+			desired = angle_to_target(x, y);
+		}
+
+		last_distance = avg_distance();
+
+		float heading = gyro_absolute();
 
 		//set our speed of approach
 		int motor_bias;
-		if(current_dist>512) 
-			//far from target -> go fast
-			motor_bias = frob_read_range(0, MAX_SPEED);
-		else
-			//getting close -> slow down but not all the way
-			motor_bias = current_dist/(512.0/frob_read_range(0, MAX_SPEED))+32;
+		if(abs(bound(-180, heading-desired, 180))<60) {
+			if(turning) last_distance += 256;
+			turning = false;
 
-		float heading = gyro_absolute(); //TODO fuse VPS and gyro data
+			#define DIST_CLOSE 1500.0
+			if(current_dist>DIST_CLOSE) 
+				//far from target -> go fast
+				motor_bias = frob_read_range(0, MAX_SPEED);
+			else
+				//getting close -> slow down but not all the way
+				motor_bias = MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE;
+		} else {
+			motor_bias = 0;
+			turning = true;
+		}
+
 		float output = pid_calc(pid_linear_settings, heading, desired);
 
-		motor_set_vel(MOTOR_LEFT, within(0, motor_bias + output, 255));
-		motor_set_vel(MOTOR_RIGHT, within(0, motor_bias - output, 255));
-		
-		//update where we are	
-		vps_update();
-		if(abs(output)<5.0) { //TODO check if VPS is lying
-			printf("updated gyro");
-			gyro_transform = gyro_get_degrees()-vps_get_degrees();
-		}
-		
-		int dx = vps_x;
-		int dy = vps_y;
-
-		if(abs(output)<5.0) {
-			printf("updated pos");
-			desired = (atan2(y-(vps_y+dy), x-(vps_x+dx))/M_PI)*180;
+		//bound the turning speed
+		#define TURN_SPEED		64
+		if(turning) {
+			if(output<-TURN_SPEED) output = -TURN_SPEED;
+			if(output>TURN_SPEED) output = TURN_SPEED;
 		}
 
-		printf("%f\n", output);
+		motor_set_vel(MOTOR_LEFT, within(-255, motor_bias + output, 255));
+		motor_set_vel(MOTOR_RIGHT, within(-255, motor_bias - output, 255));
 
-		old_x = vps_x;
-		old_y = vps_y;
-
-		//get our new location
-		vps_update();
-		//printf("dist=%f	", distance(vps_x, vps_y, x, y));
-		//printf("(%d, %d) @ %f\n", vps_x, vps_y, heading);
+		yield();
 	} while(current_dist>128);
+
+	printf("done moving to (%d, %d)\n", x, y);
 }
 
 float pid_calc(pid_data prefs, float current, float target) {
-	float error = (target - current);
+	float error = bound(-180, target - current, 180);
 
 	float integral = 0;
 	if(abs(error) > prefs.epsilon)

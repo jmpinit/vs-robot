@@ -2,7 +2,7 @@
 #define _CONTROL_
 
 #define MOTOR_LEFT	0
-#define MOTOR_RIGHT	0
+#define MOTOR_RIGHT	1
 
 typedef struct {
 	float epsilon;
