@@ -20,72 +20,20 @@ int usetup(void) {
 	robot_id = 12;
 
 	//initialize the gyro
-	go_press();
-
 	gyro_init(GYRO_PORT, LSB_US_PER_DEG, 500L);
 	pause(100);
 	vps_update();
 	gyro_zero();
+
+	//start up the motor controller
+	ctrl_init();
 
 	led_clear();
 
 	return 0;
 }
 
-int ledstate = 0;
-int ledtimer = 0;
-int led_tick(void) {
-	for(;;){
-		if(ledtimer>1000) {
-			led_clear();
-
-			if(vps_is_shit()) {
-				if(ledstate==0) {
-					led_set(0, false);
-					led_set(1, false);
-					led_set(2, false);
-					
-					ledstate = 1;
-				} else {
-					led_set(0, true);
-					led_set(1, true);
-					led_set(2, true);
-
-					ledstate = 0;
-				}
-			} else {
-				switch(ledstate%3) {
-					case 0:
-						led_set(0, true);
-						break;
-					case 1:
-						led_set(1, true);
-						break;
-					case 2:
-						led_set(2, true);
-						break;
-				}
-			}
-
-
-			ledstate++;
-			ledtimer = 0;
-		} else {
-			ledtimer++;
-		}
-
-		yield(); //tell joyos this thread is done for now
-	}
-
-	return 0;
-}
-
 int umain(void) {
-	create_thread(&led_tick, STACK_DEFAULT, 0, "led_thread");
-	create_thread(&ramper_thread, STACK_DEFAULT, 0, "ramper_thread");
-
-	#include "calibration/check_ramper.c"
-
     while(1) {
 		while(1) {
 			vps_update();
