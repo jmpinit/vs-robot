@@ -38,6 +38,26 @@ float angle_to_target(int x, int y) {
 	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
 }
 
+static int* target_speed = 0;
+static float* speed = 0;
+int ramper_thread(void) {
+	ramper_settings ramper = {0, 0, 0.1};
+	speed = &ramper.current;
+	target_speed = &ramper.target;
+
+	for(;;) {
+		if(ramper.current<ramper.target) {
+			ramper.current += ramper.slope;
+		} else {
+			ramper.current -= ramper.slope;
+		}
+
+		yield();
+	}
+
+	return 0;
+}
+
 void move_to(int x, int y) {
 	float desired = 0;
 	float current_dist;
