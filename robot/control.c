@@ -2,13 +2,14 @@
 #include <math.h>
 
 #include "sensors.h"
+#include "debug.h"
 #include "control.h"
 #include "util_math.h"
 
-#define DIST_CHECK	128
-#define DIST_CLOSE	512
+#define DIST_CHECK	512
+#define DIST_CLOSE	1024
 #define MAX_SPEED	245	//the fastest the robot will go
-#define MIN_SPEED	96	//speed of approach
+#define MIN_SPEED	128	//speed of approach
 
 //pid settings for moving straight
 pid_data pid_linear_settings = {
@@ -44,6 +45,7 @@ void move_to(int x, int y) {
 	float current_dist;
 	float last_distance = 0;
 
+	ctrl_set_heading(angle_to_target(x, y));
     do {
 		vps_update();
 
@@ -57,18 +59,22 @@ void move_to(int x, int y) {
 		last_distance = avg_distance();
 
 		//move towards the target
-		ctrl_set_heading(angle_to_target(x, y));
-		ctrl_set_speed(MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE);
+		if(current_dist>DIST_CLOSE)
+			ctrl_set_speed(frob_read_range(0, MAX_SPEED));
+		else
+			ctrl_set_speed(MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE);
 
 		//correct course
 		if(encoder_read(MOTOR_LEFT) % DIST_CHECK == 0) {
+			led_set(0, true); led_set(1, true); led_set(2, true);
 			while(vps_is_shit()) asm volatile("NOP;");
 			gyro_zero();
 			ctrl_set_heading(angle_to_target(x, y));
+			led_clear();
 		}
 
 		yield();
-	} while(current_dist>128);
+	} while(current_dist>96);
 
 	printf("done moving to (%d, %d)\n", x, y);
 }
