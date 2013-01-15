@@ -5,8 +5,10 @@
 #include "control.h"
 #include "util_math.h"
 
-#define MAX_SPEED	245	//the fastest the robot will go
-#define MIN_SPEED	96	//speed of approach
+#define TIME_ACCEL		10
+#define CHECK_DIST		2048.0
+#define MAX_SPEED		245	//the fastest the robot will go
+#define MIN_SPEED		96	//speed of approach
 
 //pid settings for moving straight
 pid_data pid_linear_settings = {
@@ -44,6 +46,10 @@ void move_to(int x, int y) {
 	float last_distance = 0;
 	bool turning = false;
 
+	int speedup_timer = 0;
+	int speed_target = 0;
+	int speed = 0;
+
     do {
 		vps_update();
 
@@ -58,12 +64,13 @@ void move_to(int x, int y) {
 		tick_distance(current_dist);
 
 		//check if we need to reorient
-		if(avg_distance()>last_distance && !turning) {
+		if(avg_distance()>last_distance && current_dist<CHECK_DIST && !turning) {
 			//stop the robot so the VPS lag goes to zero
 			for(int i=frob_read_range(0, MAX_SPEED); i>=0; i--) {
+				speed = 0;
 				motor_set_vel(MOTOR_LEFT, i);
 				motor_set_vel(MOTOR_RIGHT, i);
-				pause(1);
+				pause(8);
 			}
 			pause(100);
 
@@ -78,21 +85,32 @@ void move_to(int x, int y) {
 		float heading = gyro_absolute();
 
 		//set our speed of approach
-		int motor_bias;
+		int motor_bias = 0;
 		if(abs(bound(-180, heading-desired, 180))<60) {
 			if(turning) last_distance += 256;
-			turning = false;
+				turning = false;
 
 			#define DIST_CLOSE 1500.0
 			if(current_dist>DIST_CLOSE) 
 				//far from target -> go fast
-				motor_bias = frob_read_range(0, MAX_SPEED);
+				speed_target = frob_read_range(0, MAX_SPEED);
 			else
 				//getting close -> slow down but not all the way
-				motor_bias = MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE;
+				speed_target = MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE;
 		} else {
-			motor_bias = 0;
+			speed_target = 0;
 			turning = true;
+		}
+
+		//slowly reach speed
+		if(speed!=speed_target) {
+			if(speedup_timer>TIME_ACCEL) {
+				(speed<speed_target) ? speed++: speed--;
+				speedup_timer = 0;
+			} else {
+				speedup_timer++;
+			}
+			motor_bias = speed;
 		}
 
 		float output = pid_calc(pid_linear_settings, heading, desired);
