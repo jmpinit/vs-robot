@@ -63,22 +63,12 @@ int led_tick(void) {
 }
 
 int umain(void) {
-	#include "calibration/motor_test.c"
-
 	create_thread(&led_tick, STACK_DEFAULT, 0, "led_thread");
 	create_thread(&ramper_thread, STACK_DEFAULT, 0, "ramper_thread");
 
-    while(1) {
-		/*motor_set_vel(MOTOR_LEFT, -255);
-		motor_set_vel(MOTOR_RIGHT, 255);
-		pause(500);
-		motor_set_vel(MOTOR_LEFT, 255);
-		motor_set_vel(MOTOR_RIGHT, -255);
-		pause(500);
-		motor_brake(MOTOR_LEFT);
-		motor_brake(MOTOR_RIGHT);*/
+	#include "calibration/check_ramper.c"
 
-		//movement test
+    while(1) {
 		while(1) {
 			vps_update();
 			move_to(vps_target_x, vps_target_y);
