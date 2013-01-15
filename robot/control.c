@@ -77,23 +77,6 @@ void move_to(int x, int y) {
 			current_dist = last_distance;
 
 		tick_distance(current_dist);
-
-		//check if we need to reorient
-		/*if(avg_distance()>last_distance && !turning) {
-			//stop the robot so the VPS lag goes to zero
-			for(int i=frob_read_range(0, MAX_SPEED); i>=0; i--) {
-				motor_set_vel(MOTOR_LEFT, i);
-				motor_set_vel(MOTOR_RIGHT, i);
-				pause(8);
-			}
-			pause(100);
-
-			//get rid of gyro drift and find the target again
-			while(vps_is_shit()) asm volatile("NOP;");
-			gyro_zero();
-			desired = angle_to_target(x, y);
-		}*/
-
 		last_distance = avg_distance();
 
 		float heading = gyro_absolute();
