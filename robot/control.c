@@ -5,6 +5,7 @@
 #include "control.h"
 #include "util_math.h"
 
+#define CHECK_DIST	1500.0
 #define MAX_SPEED	245	//the fastest the robot will go
 #define MIN_SPEED	96	//speed of approach
 
@@ -67,7 +68,7 @@ void move_to(int x, int y) {
     do {
 		vps_update();
 
-		printf("(%d, %d)\n", vps_x, vps_y);
+		//printf("(%d, %d)\n", vps_x, vps_y);
 
 		if(!vps_is_shit())
 			current_dist = distance(vps_x, vps_y, x, y);
@@ -78,12 +79,12 @@ void move_to(int x, int y) {
 		tick_distance(current_dist);
 
 		//check if we need to reorient
-		if(avg_distance()>last_distance && !turning) {
+		/*if(avg_distance()>last_distance && !turning) {
 			//stop the robot so the VPS lag goes to zero
 			for(int i=frob_read_range(0, MAX_SPEED); i>=0; i--) {
 				motor_set_vel(MOTOR_LEFT, i);
 				motor_set_vel(MOTOR_RIGHT, i);
-				pause(1);
+				pause(8);
 			}
 			pause(100);
 
@@ -91,14 +92,13 @@ void move_to(int x, int y) {
 			while(vps_is_shit()) asm volatile("NOP;");
 			gyro_zero();
 			desired = angle_to_target(x, y);
-		}
+		}*/
 
 		last_distance = avg_distance();
 
 		float heading = gyro_absolute();
 
 		//set our speed of approach
-		int motor_bias;
 		if(abs(bound(-180, heading-desired, 180))<60) {
 			if(turning) last_distance += 256;
 			turning = false;
@@ -106,12 +106,12 @@ void move_to(int x, int y) {
 			#define DIST_CLOSE 1500.0
 			if(current_dist>DIST_CLOSE) 
 				//far from target -> go fast
-				motor_bias = frob_read_range(0, MAX_SPEED);
+				*target_speed = frob_read_range(0, MAX_SPEED);
 			else
 				//getting close -> slow down but not all the way
-				motor_bias = MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE;
+				*target_speed = MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE;
 		} else {
-			motor_bias = 0;
+			*target_speed = 0;
 			turning = true;
 		}
 
@@ -124,8 +124,16 @@ void move_to(int x, int y) {
 			if(output>TURN_SPEED) output = TURN_SPEED;
 		}
 
-		motor_set_vel(MOTOR_LEFT, within(-255, motor_bias + output, 255));
-		motor_set_vel(MOTOR_RIGHT, within(-255, motor_bias - output, 255));
+		motor_set_vel(MOTOR_LEFT, within(-255, *speed + output, 255));
+		motor_set_vel(MOTOR_RIGHT, within(-255, *speed - output, 255));
+
+		//correct course
+		printf("%f", output);
+		if(!turning && abs(output)<6) {
+			while(vps_is_shit()) asm volatile("NOP;");
+			gyro_zero();
+			desired = angle_to_target(x, y);
+		}
 
 		yield();
 	} while(current_dist>128);
