@@ -5,7 +5,7 @@
 #include "control.h"
 #include "util_math.h"
 
-#define CHECK_DIST	1500.0
+#define CHECK_DIST	512
 #define MAX_SPEED	245	//the fastest the robot will go
 #define MIN_SPEED	96	//speed of approach
 
@@ -74,10 +74,12 @@ void move_to(int x, int y) {
 			*/
 
 		//correct course
-		while(vps_is_shit()) asm volatile("NOP;");
-		gyro_zero();
-		ctrl_set_heading(angle_to_target(x, y));
-
+		if((encoder_read(ENCODER_CENTER) % CHECK_DIST) == 0) 
+		{
+			while(vps_is_shit()) asm volatile("NOP;");
+			gyro_zero();
+			ctrl_set_heading(angle_to_target(x, y));
+		}
 		yield();
 	} while(current_dist>128);
 
