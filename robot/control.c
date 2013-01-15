@@ -40,35 +40,16 @@ float angle_to_target(int x, int y) {
 	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
 }
 
-int ramper_thread(void) {
-	ramper_settings ramper = {0, 0, 0.1};
-	speed = &ramper.current;
-	target_speed = &ramper.target;
-
-	for(;;) {
-		if(ramper.current<ramper.target) {
-			ramper.current += ramper.slope;
-		} else {
-			ramper.current -= ramper.slope;
-		}
-
-		yield();
-	}
-
-	return 0;
-}
-
 void move_to(int x, int y) {
-	float desired = 0;
 	float current_dist;
 	float last_distance = 0;
-	bool turning = false;
 
     do {
 		vps_update();
 
-		//printf("(%d, %d)\n", vps_x, vps_y);
-
+		/*
+		   Distance handling
+		*/
 		if(!vps_is_shit())
 			current_dist = distance(vps_x, vps_y, x, y);
 		else
@@ -78,44 +59,24 @@ void move_to(int x, int y) {
 		tick_distance(current_dist);
 		last_distance = avg_distance();
 
-		float heading = gyro_absolute();
+		//move towards the target
+		ctrl_set_heading(angle_to_target(x, y));
+		ctrl_set_speed(frob_read_range(0, MAX_SPEED));
 
-		//set our speed of approach
-		if(abs(bound(-180, heading-desired, 180))<60) {
-			if(turning) last_distance += 256;
-			turning = false;
-
-			#define DIST_CLOSE 1500.0
-			if(current_dist>DIST_CLOSE) 
-				//far from target -> go fast
-				*target_speed = frob_read_range(0, MAX_SPEED);
-			else
-				//getting close -> slow down but not all the way
-				*target_speed = MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE;
-		} else {
-			*target_speed = 0;
-			turning = true;
-		}
-
-		float output = pid_calc(pid_linear_settings, heading, desired);
-
-		//bound the turning speed
-		#define TURN_SPEED		64
-		if(turning) {
-			if(output<-TURN_SPEED) output = -TURN_SPEED;
-			if(output>TURN_SPEED) output = TURN_SPEED;
-		}
-
-		motor_set_vel(MOTOR_LEFT, within(-255, *speed + output, 255));
-		motor_set_vel(MOTOR_RIGHT, within(-255, *speed - output, 255));
+		/*
+		#define DIST_CLOSE 1500.0
+		if(current_dist>DIST_CLOSE) 
+			//far from target -> go fast
+			*target_speed = frob_read_range(0, MAX_SPEED);
+		else
+			//getting close -> slow down but not all the way
+			*target_speed = MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE;
+			*/
 
 		//correct course
-		printf("%f", output);
-		if(!turning && abs(output)<6) {
-			while(vps_is_shit()) asm volatile("NOP;");
-			gyro_zero();
-			desired = angle_to_target(x, y);
-		}
+		while(vps_is_shit()) asm volatile("NOP;");
+		gyro_zero();
+		ctrl_set_heading(angle_to_target(x, y));
 
 		yield();
 	} while(current_dist>128);
@@ -142,37 +103,49 @@ float pid_calc(pid_data prefs, float current, float target) {
    Motor control abstraction layer
 */
 
-ctrl_data *ctrl_settings;
+ctrl_data ctrl_settings;
 void ctrl_init(void) {
-	create_thread(&motor_controller, STACK_DEFAULT, 0, "ramper_thread");
+	create_thread(&motor_controller, STACK_DEFAULT, 0, "ctrl_thread");
 
 	//init the settings
-	ctrl_data settings;
-	ctrl_settings = &settings;
+	ctrl_settings.speed = 0;
+	ctrl_settings.target = 128;
+	ctrl_settings.heading = 0;
+	ctrl_settings.slope = 5;
 }
 
 void ctrl_set_heading(float heading) {
-	ctrl_settings->heading = heading;
+	ctrl_settings.heading = heading;
 }
 
 void ctrl_set_speed(int speed) {
-	ctrl_settings->speed = speed;
+	ctrl_settings.target = speed;
+	printf("speed changed\n");
 }
 
 int motor_controller(void) {
 	for(;;) {
-		float heading = gyro_absolute();
-		float output = pid_calc(pid_linear_settings, heading, ctrl_settings->heading);
+		printf("target=%d, speed=%f\n", ctrl_settings.target, ctrl_settings.speed);
 
-		if(abs(bound(-180, heading-ctrl_settings->heading, 180))<60) {
-			output /= 4.0;
-			motor_set_vel(MOTOR_LEFT, ctrl_settings->speed + output);
-			motor_set_vel(MOTOR_LEFT, ctrl_settings->speed - output);
+		if(ctrl_settings.speed<ctrl_settings.target-ctrl_settings.slope) {
+			ctrl_settings.speed += ctrl_settings.slope;
+		} else if(ctrl_settings.speed>ctrl_settings.target+ctrl_settings.slope) {
+			ctrl_settings.speed -= ctrl_settings.slope;
 		} else {
-			motor_set_vel(MOTOR_LEFT, output);
-			motor_set_vel(MOTOR_LEFT, output);
+			ctrl_settings.speed = ctrl_settings.target;
 		}
 
+		float heading = gyro_absolute();
+		float output = pid_calc(pid_linear_settings, heading, ctrl_settings.heading);
+
+		if(abs(bound(-180, heading-ctrl_settings.heading, 180))<60) {
+			output /= 4.0;
+			motor_set_vel(MOTOR_LEFT, ctrl_settings.speed + output);
+			motor_set_vel(MOTOR_RIGHT, ctrl_settings.speed - output);
+		} else {
+			motor_set_vel(MOTOR_LEFT, output);
+			motor_set_vel(MOTOR_RIGHT, -output);
+		}
 
 		yield();
 	}

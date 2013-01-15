@@ -26,7 +26,7 @@ int usetup(void) {
 	gyro_zero();
 
 	//start up the motor controller
-	ctrl_init();
+	//ctrl_init();
 
 	led_clear();
 
@@ -34,13 +34,11 @@ int usetup(void) {
 }
 
 int umain(void) {
-    while(1) {
-		while(1) {
-			vps_update();
-			move_to(vps_target_x, vps_target_y);
-			motor_set_vel(0, 0);
-			motor_set_vel(1, 0);
-		}
+	ctrl_init();
+
+	while(1) {
+		vps_update();
+		move_to(vps_target_x, vps_target_y);
 	}
 
     return 0;
