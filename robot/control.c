@@ -123,7 +123,12 @@ int motor_controller(void) {
 			ctrl_settings.speed = ctrl_settings.target;
 		}
 
-		float heading = gyro_absolute();
+		float heading;
+		if(vps_is_shit())
+			heading = gyro_get_degrees();
+		else
+			heading = gyro_absolute();
+
 		float output = pid_calc(pid_linear_settings, heading, ctrl_settings.heading);
 
 		if(abs(bound(-180, heading-ctrl_settings.heading, 180))<60) {
