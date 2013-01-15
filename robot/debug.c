@@ -1,5 +1,6 @@
 #include <joyos.h>
 #include "debug.h"
+#include "sensors.h"
 
 static int ledstate = 0;
 static int ledtimer = 0;
@@ -67,5 +68,5 @@ void led_init(void) {
 	DDRD = (1<<PD2)|(1<<PD3)|(1<<PD4); //create outputs for LEDs
 	led_clear();
 
-	create_thread(&led_tick, STACK_DEFAULT, 0, "led_thread");
+	create_thread(&led_tick, STACK_DEFAULT, 255, "led_thread");
 }
