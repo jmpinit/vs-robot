@@ -12,5 +12,10 @@ ctrl_set_heading(desired);
 ctrl_set_speed(128);
 
 while(encoder_read(ENCODER_LEFT)<64) {
-	asm volatile ("NOP");
+	printf("%d", encoder_read(ENCODER_LEFT));
+	yield();
 }
+
+ctrl_set_speed(0);
+
+while(true) asm volatile ("NOP");
