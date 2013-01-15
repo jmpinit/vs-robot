@@ -5,7 +5,7 @@
 #include "control.h"
 #include "util_math.h"
 
-#define DIST_CHECK	512
+#define DIST_CHECK	128
 #define DIST_CLOSE	512
 #define MAX_SPEED	245	//the fastest the robot will go
 #define MIN_SPEED	96	//speed of approach
@@ -40,7 +40,6 @@ float angle_to_target(int x, int y) {
 	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
 }
 
-unsigned int time = 0;
 void move_to(int x, int y) {
 	float current_dist;
 	float last_distance = 0;
@@ -62,13 +61,11 @@ void move_to(int x, int y) {
 		ctrl_set_speed(MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE);
 
 		//correct course
-		if(time % DIST_CHECK == 0) {
+		if(encoder_read(MOTOR_LEFT) % DIST_CHECK == 0) {
 			while(vps_is_shit()) asm volatile("NOP;");
 			gyro_zero();
 			ctrl_set_heading(angle_to_target(x, y));
 		}
-
-		time++;
 
 		yield();
 	} while(current_dist>128);

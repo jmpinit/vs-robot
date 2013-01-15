@@ -4,9 +4,9 @@
 #define MOTOR_LEFT		0
 #define MOTOR_RIGHT		1
 
-#define ENCODER_LEFT	0
-#define ENCODER_RIGHT	1
-#define ENCODER_CENTER	3
+#define ENCODER_LEFT	24
+#define ENCODER_RIGHT	25
+#define ENCODER_CENTER	27
 
 typedef struct {
 	float speed;
