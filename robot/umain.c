@@ -9,6 +9,32 @@
 #define GYRO_PORT		8
 #define LSB_US_PER_DEG	1400000
 
+#define FOSC	8000000
+#define BAUD	19200
+#define MYUBBR	FOSC/16/BAUD-1
+
+void usart_init(unsigned int ubbr) {
+	UBRR1H = (unsigned char)(ubbr>>8);
+	UBRR1L = (unsigned char)ubbr;
+	//enable receiver and transmitter
+	UCSR1B = (1<<RXEN)|(1<<TXEN);
+	//set frame format: 8 data, 2 stop
+	UCSR1C = (1<<USBS)|(3<<UCSZ0);
+}
+
+unsigned char rx1(void) {
+	//wait for data
+	while(!(UCSR1A&(1<<RXC))) asm volatile ("NOP");
+	return UDR1&0x7F;
+}
+
+void tx1(unsigned char data) {
+	//wait for empty tx buff
+	while(!(UCSR1A&(1<<UDRE1))) asm volatile ("NOP");
+	//put data in buff
+	UDR1 = data;
+}
+
 int usetup(void) {
 	led_init();
 	led_set(0, 1);
