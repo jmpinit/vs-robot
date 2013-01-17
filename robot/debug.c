@@ -2,6 +2,8 @@
 #include <joyos.h>
 #include "debug.h"
 #include "control.h"
+#include "sensors.h"
+#include "term.h"
 
 /*
    BLUETOOTH
@@ -30,42 +32,71 @@ void blue_tx(unsigned char data) {
 	UDR1 = data;
 }
 
-int speed = 0;
+void blue_print(char *data) {
+	char c;
+	while((c=*(data++))) blue_tx(c);
+}
+
+unsigned char mode = MODE_WAIT;
 ISR(USART1_RX_vect) {
-	char result = UDR1;
-	switch(result) {
-		case 'q':
-			motor_set_vel(MOTOR_LEFT, speed);
+	char data = UDR1;
+
+	switch(mode) {
+		case MODE_WAIT:
+			switch(data) {
+				case ' ':	//KILL
+					blue_print("killing...\n\r");
+
+					//stop everything
+					motor_brake(MOTOR_LEFT);
+					motor_brake(MOTOR_RIGHT);
+					halt();
+					break;
+				case '!':
+					blue_print("entering terminal...\n\r");
+					mode = MODE_TERM;
+					term_init();
+					break;
+				case 'r':
+					blue_print("remote control mode. space to escape.\n\r");
+					mode = MODE_CONTROL;
+			}
 			break;
-		case 'w':
-			motor_set_vel(MOTOR_LEFT, speed);
-			motor_set_vel(MOTOR_RIGHT, speed);
+		case MODE_TERM:
+			//TODO ~ exits terminal
+			term_consume(data);
 			break;
-		case 'e':
-			motor_set_vel(MOTOR_RIGHT, speed);
+		case MODE_CONTROL:
+			switch(data) {
+				case 'q':
+					motor_set_vel(MOTOR_LEFT, 128);
+					break;
+				case 'w':
+					motor_set_vel(MOTOR_LEFT, 128);
+					motor_set_vel(MOTOR_RIGHT, 128);
+					break;
+				case 'e':
+					motor_set_vel(MOTOR_RIGHT, 128);
+					break;
+				case 'a':
+					motor_set_vel(MOTOR_LEFT, -128);
+					break;
+				case 'd':
+					motor_set_vel(MOTOR_RIGHT, -128);
+					break;
+				case 'z':
+					motor_set_vel(MOTOR_LEFT, -128);
+					motor_set_vel(MOTOR_RIGHT, -128);
+					break;
+				case ' ':
+					blue_print("waiting for commands...\n");
+					mode = MODE_WAIT;
+					break;
+				default:
+					motor_brake(MOTOR_LEFT);
+					motor_brake(MOTOR_RIGHT);
+			}
 			break;
-		case 'a':
-			motor_set_vel(MOTOR_LEFT, -speed);
-			break;
-		case 'd':
-			motor_set_vel(MOTOR_RIGHT, -speed);
-			break;
-		case 'z':
-			motor_set_vel(MOTOR_LEFT, -speed);
-			motor_set_vel(MOTOR_RIGHT, -speed);
-			break;
-		case '0':
-			speed = 64;
-			break;
-		case '1':
-			speed = 128;
-			break;
-		case '2':
-			speed = 256;
-			break;
-		default:
-			motor_brake(MOTOR_LEFT);
-			motor_brake(MOTOR_RIGHT);
 	}
 }
 
