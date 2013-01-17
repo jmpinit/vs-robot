@@ -36,10 +36,12 @@ void tx1(unsigned char data) {
 }
 
 int usetup(void) {
-	led_init();
+	usart_init(MYUBBR);
+
+	/*led_init();
 	led_set(0, 1);
 	led_set(1, 1);
-	led_set(2, 1);
+	led_set(2, 1);*/
 
 	//set our team # for the VPS
 	extern volatile uint8_t robot_id;
@@ -51,15 +53,51 @@ int usetup(void) {
 	vps_update();
 	gyro_zero();
 
-	//start up the motor controller
-	//ctrl_init();
-
-	led_clear();
+	//led_clear();
 
 	return 0;
 }
 
 int umain(void) {
+	int speed = 0;
+	while(true) {
+		char result = rx1();
+		switch(result) {
+			case 'q':
+				motor_set_vel(MOTOR_LEFT, speed);
+				break;
+			case 'w':
+				motor_set_vel(MOTOR_LEFT, speed);
+				motor_set_vel(MOTOR_RIGHT, speed);
+				break;
+			case 'e':
+				motor_set_vel(MOTOR_RIGHT, speed);
+				break;
+			case 'a':
+				motor_set_vel(MOTOR_LEFT, -speed);
+				break;
+			case 'd':
+				motor_set_vel(MOTOR_RIGHT, -speed);
+				break;
+			case 'z':
+				motor_set_vel(MOTOR_LEFT, -speed);
+				motor_set_vel(MOTOR_RIGHT, -speed);
+				break;
+			case '0':
+				speed = 64;
+				break;
+			case '1':
+				speed = 128;
+				break;
+			case '2':
+				speed = 256;
+				break;
+			default:
+				motor_brake(MOTOR_LEFT);
+				motor_brake(MOTOR_RIGHT);
+		}
+	}
+
 	ctrl_init();
 
 	while(1) {
