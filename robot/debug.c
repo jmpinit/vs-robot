@@ -1,5 +1,77 @@
+#include <avr/interrupt.h>
 #include <joyos.h>
 #include "debug.h"
+#include "control.h"
+
+/*
+   BLUETOOTH
+*/
+
+void blue_init(unsigned int ubbr) {
+	UBRR1H = (unsigned char)(ubbr>>8);
+	UBRR1L = (unsigned char)ubbr;
+	//enable receiver and transmitter
+	UCSR1B = (1<<RXCIE)|(1<<RXEN)|(1<<TXEN);
+	//set frame format: 8 data, 2 stop
+	UCSR1C = (1<<USBS)|(3<<UCSZ0);
+	
+}
+
+unsigned char blue_rx(void) {
+	//wait for data
+	while(!(UCSR1A&(1<<RXC))) asm volatile ("NOP");
+	return UDR1;
+}
+
+void blue_tx(unsigned char data) {
+	//wait for empty tx buff
+	while(!(UCSR1A&(1<<UDRE1))) asm volatile ("NOP");
+	//put data in buff
+	UDR1 = data;
+}
+
+int speed = 0;
+ISR(USART1_RX_vect) {
+	char result = UDR1;
+	switch(result) {
+		case 'q':
+			motor_set_vel(MOTOR_LEFT, speed);
+			break;
+		case 'w':
+			motor_set_vel(MOTOR_LEFT, speed);
+			motor_set_vel(MOTOR_RIGHT, speed);
+			break;
+		case 'e':
+			motor_set_vel(MOTOR_RIGHT, speed);
+			break;
+		case 'a':
+			motor_set_vel(MOTOR_LEFT, -speed);
+			break;
+		case 'd':
+			motor_set_vel(MOTOR_RIGHT, -speed);
+			break;
+		case 'z':
+			motor_set_vel(MOTOR_LEFT, -speed);
+			motor_set_vel(MOTOR_RIGHT, -speed);
+			break;
+		case '0':
+			speed = 64;
+			break;
+		case '1':
+			speed = 128;
+			break;
+		case '2':
+			speed = 256;
+			break;
+		default:
+			motor_brake(MOTOR_LEFT);
+			motor_brake(MOTOR_RIGHT);
+	}
+}
+
+/*
+   LED CONTROL
+   */
 
 static int ledstate = 0;
 static int ledtimer = 0;

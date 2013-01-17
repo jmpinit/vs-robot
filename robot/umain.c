@@ -9,34 +9,8 @@
 #define GYRO_PORT		8
 #define LSB_US_PER_DEG	1400000
 
-#define FOSC	8000000
-#define BAUD	19200
-#define MYUBBR	FOSC/16/BAUD-1
-
-void usart_init(unsigned int ubbr) {
-	UBRR1H = (unsigned char)(ubbr>>8);
-	UBRR1L = (unsigned char)ubbr;
-	//enable receiver and transmitter
-	UCSR1B = (1<<RXEN)|(1<<TXEN);
-	//set frame format: 8 data, 2 stop
-	UCSR1C = (1<<USBS)|(3<<UCSZ0);
-}
-
-unsigned char rx1(void) {
-	//wait for data
-	while(!(UCSR1A&(1<<RXC))) asm volatile ("NOP");
-	return UDR1&0x7F;
-}
-
-void tx1(unsigned char data) {
-	//wait for empty tx buff
-	while(!(UCSR1A&(1<<UDRE1))) asm volatile ("NOP");
-	//put data in buff
-	UDR1 = data;
-}
-
 int usetup(void) {
-	usart_init(MYUBBR);
+	blue_init(MYUBBR);
 
 	/*led_init();
 	led_set(0, 1);
@@ -59,43 +33,8 @@ int usetup(void) {
 }
 
 int umain(void) {
-	int speed = 0;
 	while(true) {
-		char result = rx1();
-		switch(result) {
-			case 'q':
-				motor_set_vel(MOTOR_LEFT, speed);
-				break;
-			case 'w':
-				motor_set_vel(MOTOR_LEFT, speed);
-				motor_set_vel(MOTOR_RIGHT, speed);
-				break;
-			case 'e':
-				motor_set_vel(MOTOR_RIGHT, speed);
-				break;
-			case 'a':
-				motor_set_vel(MOTOR_LEFT, -speed);
-				break;
-			case 'd':
-				motor_set_vel(MOTOR_RIGHT, -speed);
-				break;
-			case 'z':
-				motor_set_vel(MOTOR_LEFT, -speed);
-				motor_set_vel(MOTOR_RIGHT, -speed);
-				break;
-			case '0':
-				speed = 64;
-				break;
-			case '1':
-				speed = 128;
-				break;
-			case '2':
-				speed = 256;
-				break;
-			default:
-				motor_brake(MOTOR_LEFT);
-				motor_brake(MOTOR_RIGHT);
-		}
+		asm volatile ("NOP");
 	}
 
 	ctrl_init();
