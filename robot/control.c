@@ -1,86 +1,38 @@
 #include <joyos.h>
 #include <math.h>
 
-#include "sensors.h"
-#include "control.h"
-#include "util_math.h"
+#include "inc/sensors.h"
+#include "inc/control.h"
+#include "inc/util_math.h"
 
-#define CHECK_DIST	1500.0
-#define MAX_SPEED	245	//the fastest the robot will go
-#define MIN_SPEED	96	//speed of approach
+#define MAX_SPEED	245	//the fastest the robot will go (leave room for PID)
 
-//pid settings for moving straight
-pid_data pid_linear_settings = {
-	0.1,
-	0.1,
-	3.0,
-	0.1,
-	0.05,
-	0
-};
-
-#define DIST_HIST	4
-int distances[DIST_HIST];
-int avg_distance(void) {
-	float total = 0;
-	for(unsigned char i=0; i<DIST_HIST; i++)
-		total += distances[i];
-	return total/((float)(DIST_HIST));
-}
-
-void tick_distance(int d) {
-	//move back history
-	for(unsigned char i=DIST_HIST-1; i>0; i--)
-		distances[i] = distances[i-1];
-	distances[0] = d;
-}
+/* nav settings */
+static pid_data pid_linear;
+static nav_data nav_settings;
 
 float angle_to_target(int x, int y) {
 	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
 }
 
 void move_to(int x, int y) {
-	float current_dist;
-	float last_distance = 0;
-
-    do {
+    while(true) {
 		vps_update();
 
-		/*
-		   Distance handling
-		*/
-		if(!vps_is_shit())
-			current_dist = distance(vps_x, vps_y, x, y);
-		else
-			//TODO use encoders here
-			current_dist = last_distance;
-
-		tick_distance(current_dist);
-		last_distance = avg_distance();
+		//are we there yet?
+		
 
 		//move towards the target
-		ctrl_set_heading(angle_to_target(x, y));
-		ctrl_set_speed(frob_read_range(0, MAX_SPEED));
-
-		/*
-		#define DIST_CLOSE 1500.0
-		if(current_dist>DIST_CLOSE) 
-			//far from target -> go fast
-			*target_speed = frob_read_range(0, MAX_SPEED);
-		else
-			//getting close -> slow down but not all the way
-			*target_speed = MIN_SPEED + within(0, frob_read_range(0, MAX_SPEED)-MIN_SPEED, MAX_SPEED)*current_dist/DIST_CLOSE;
-			*/
+		nav_set_heading(angle_to_target(x, y));
+		nav_set_speed(frob_read_range(0, MAX_SPEED));
 
 		//correct course
 		while(vps_is_shit()) asm volatile("NOP;");
 		gyro_zero();
-		ctrl_set_heading(angle_to_target(x, y));
+		nav_set_heading(angle_to_target(x, y));
 
 		yield();
-	} while(current_dist>128);
-
-	printf("done moving to (%d, %d)\n", x, y);
+	}
 }
 
 float pid_calc(pid_data prefs, float current, float target) {
@@ -102,45 +54,49 @@ float pid_calc(pid_data prefs, float current, float target) {
    Motor control abstraction layer
 */
 
-ctrl_data ctrl_settings;
-void ctrl_init(void) {
-	create_thread(&motor_controller, STACK_DEFAULT, 0, "ctrl_thread");
+void nav_init(void) {
+	create_thread(&motor_controller, STACK_DEFAULT, 0, "nav_thread");
+
+	//init pid settings
+	pid_linear.epsilon	= 0.1;
+	pid_linear.dt		= 0.1;
+	pid_linear.Kp		= 3.0;
+	pid_linear.Kd		= 0.1;
+	pid_linear.Ki		= 0.05;
 
 	//init the settings
-	ctrl_settings.speed = 0;
-	ctrl_settings.target = 128;
-	ctrl_settings.heading = 0;
-	ctrl_settings.slope = 5;
+	nav_settings.speed = 0;
+	nav_settings.target = 128;
+	nav_settings.heading = 0;
+	nav_settings.slope = 5;
 }
 
-void ctrl_set_heading(float heading) {
-	ctrl_settings.heading = heading;
+void nav_set_heading(float heading) {
+	nav_settings.heading = heading;
 }
 
-void ctrl_set_speed(int speed) {
-	ctrl_settings.target = speed;
+void nav_set_speed(int speed) {
+	nav_settings.target = speed;
 	printf("speed changed\n");
 }
 
 int motor_controller(void) {
 	for(;;) {
-		printf("target=%d, speed=%f\n", ctrl_settings.target, ctrl_settings.speed);
-
-		if(ctrl_settings.speed<ctrl_settings.target-ctrl_settings.slope) {
-			ctrl_settings.speed += ctrl_settings.slope;
-		} else if(ctrl_settings.speed>ctrl_settings.target+ctrl_settings.slope) {
-			ctrl_settings.speed -= ctrl_settings.slope;
+		if(nav_settings.speed<nav_settings.target-nav_settings.slope) {
+			nav_settings.speed += nav_settings.slope;
+		} else if(nav_settings.speed>nav_settings.target+nav_settings.slope) {
+			nav_settings.speed -= nav_settings.slope;
 		} else {
-			ctrl_settings.speed = ctrl_settings.target;
+			nav_settings.speed = nav_settings.target;
 		}
 
 		float heading = gyro_absolute();
-		float output = pid_calc(pid_linear_settings, heading, ctrl_settings.heading);
+		float output = pid_calc(pid_linear, heading, nav_settings.heading);
 
-		if(abs(bound(-180, heading-ctrl_settings.heading, 180))<60) {
+		if(abs(bound(-180, heading-nav_settings.heading, 180))<60) {
 			output /= 4.0;
-			motor_set_vel(MOTOR_LEFT, ctrl_settings.speed + output);
-			motor_set_vel(MOTOR_RIGHT, ctrl_settings.speed - output);
+			motor_set_vel(MOTOR_LEFT, nav_settings.speed + output);
+			motor_set_vel(MOTOR_RIGHT, nav_settings.speed - output);
 		} else {
 			motor_set_vel(MOTOR_LEFT, output);
 			motor_set_vel(MOTOR_RIGHT, -output);

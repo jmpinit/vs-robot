@@ -7,8 +7,8 @@
 #define vps_x			game.coords[0].x
 #define vps_y			game.coords[0].y
 #define vps_heading		game.coords[0].theta
-#define vps_target_x	game.coords[1].x
-#define vps_target_y	game.coords[1].y
+#define vps_enemy_x		game.coords[1].x
+#define vps_enemy_y		game.coords[1].y
 
 float gyro_absolute(void);
 void gyro_zero(void);

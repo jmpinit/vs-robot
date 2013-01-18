@@ -8,14 +8,16 @@
 #define ENCODER_RIGHT	1
 #define ENCODER_CENTER	3
 
+//NAV CONTROLLER DATA
 typedef struct {
 	float speed;
 	int target;
 	float heading;
 
 	float slope;
-} ctrl_data;
+} nav_data;
 
+//PID CONTROLLER DATA
 typedef struct {
 	float epsilon;
 	float dt;
@@ -25,9 +27,9 @@ typedef struct {
 } pid_data;
 
 int motor_controller(void);
-void ctrl_set_speed(int speed);
-void ctrl_set_heading(float heading);
-void ctrl_init(void);
+void nav_set_speed(int speed);
+void nav_set_heading(float heading);
+void nav_init(void);
 
 void move_to(int x, int y);
 float pid_calc(pid_data prefs, float current, float target);

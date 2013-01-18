@@ -12,11 +12,6 @@
 int usetup(void) {
 	blue_init(MYUBBR);
 
-	/*led_init();
-	led_set(0, 1);
-	led_set(1, 1);
-	led_set(2, 1);*/
-
 	//set our team # for the VPS
 	extern volatile uint8_t robot_id;
 	robot_id = 12;
