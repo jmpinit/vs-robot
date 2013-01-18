@@ -9,7 +9,6 @@
 #define MAX_SPEED	245	//the fastest the robot will go
 #define MIN_SPEED	96	//speed of approach
 
-
 //pid settings for moving straight
 pid_data pid_linear_settings = {
 	0.1,

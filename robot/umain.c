@@ -35,8 +35,7 @@ int usetup(void) {
 int umain(void) {
 	float gyro_val = 0;
 
-	variable dbg_gyro = { FLOAT, &gyro_val };
-	dbg_watch(&dbg_gyro);
+	dbg_watch(&gyro_val, FLOAT);
 
 	while(true) {
 		gyro_val = gyro_get_degrees();

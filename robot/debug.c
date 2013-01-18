@@ -9,19 +9,20 @@
    DEBUG MAGIC
 */
 
-variable* watchees[NUM_WATCHED];
+variable watchees[NUM_WATCHED];
 unsigned char dbg_watch_count = 0;
-void dbg_watch(variable* watchee) {
-	watchees[dbg_watch_count] = watchee;
+void dbg_watch(void* var, enum TYPE type) {
+	watchees[dbg_watch_count].address = var;
+	watchees[dbg_watch_count].type = type;
 	dbg_watch_count++;
 }
 
 void dbg_print(unsigned int id) {
-	void* address = watchees[id]->address;
+	void* address = watchees[id].address;
 	int i;
 	float f;
 
-	switch(watchees[id]->type) {
+	switch(watchees[id].type) {
 		case INT:
 			i = *((int *)address);
 			bprintf("%d", i);
