@@ -24,7 +24,7 @@ int usetup(void) {
 }
 
 int umain(void) {
-	nav_init();
+	//nav_init();
 
 	float gyro_pos;
 	int encoder_val;

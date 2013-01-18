@@ -18,13 +18,15 @@ const char TOK_SET[] PROGMEM	= "set";		//set <# of watched var> <int value>
 const char TOK_VIEW[] PROGMEM	= "view";		//view <# of watched var>
 const char TOK_ALL[] PROGMEM	= "all";		//see state of all watched variables
 const char TOK_FOLLOW[] PROGMEM	= "follow";		//continuously watch
+const char TOK_MOTOR[] PROGMEM	= "motor";		//control motor
 
 const char *cmds[] PROGMEM = {
 	TOK_HELP,
 	TOK_SET,
 	TOK_VIEW,
 	TOK_ALL,
-	TOK_FOLLOW
+	TOK_FOLLOW,
+	TOK_MOTOR
 };
 
 enum CMD {
@@ -32,18 +34,25 @@ enum CMD {
 	SET,
 	VIEW,
 	ALL,
-	FOLLOW
+	FOLLOW,
+	MOTOR
 };
 
 /* private functions */
 void clear_buff(void);
 void term_process(void);
 
-/* callbacks for commands */
+/* command callbacks */
 void cmd_view(void);
 void cmd_follow(void);
 void cmd_set_get(void);
 void cmd_set_set(void);
+void cmd_motor_pick(void);
+void cmd_motor_set(void);
+
+/* command variables */
+unsigned int dbg_index;
+unsigned char motor_index;
 
 /* terminal state */
 char buff[BUFF_LEN];
@@ -114,7 +123,6 @@ bool cmp(unsigned char cmd, char *b) {
 	return true;
 }
 
-unsigned int dbg_index;
 int update(void) {
 	while(mode==FOLLOWING) {
 		dbg_print(dbg_index);
@@ -164,6 +172,11 @@ void term_process(void) {
 				mode = BUFFER;
 			}
 
+			break;
+		case MOTOR:
+			callback = &cmd_motor_pick;
+			bprintf("which?: ");
+			mode = BUFFER;
 			break;
 		default:
 			bprintf("not understood.\n");
@@ -218,4 +231,19 @@ void cmd_follow(void) {
 
 	mode = FOLLOWING;
 	create_thread(&update, STACK_DEFAULT, 1, "follower_thread");
+}
+
+void cmd_motor_pick(void) {
+	callback = &cmd_motor_set;
+	motor_index = atof(buff);
+	bprintf("\nvalue?: ");
+}
+
+void cmd_motor_set(void) {
+	unsigned char level = atof(buff);
+	motor_set_vel(motor_index, level);
+	bprintf("\nset motor %d to %d", motor_index, level);
+
+	mode = CMD;
+	bprintf("\n>");
 }
