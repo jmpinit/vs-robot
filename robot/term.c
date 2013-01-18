@@ -8,11 +8,11 @@
 //determines where input should go
 enum MODE {
 	CMD,
-	BUFFER,
 	FOLLOWING
 } mode;
 
 /* command info */
+//TODO add fset command (set a floating point value)
 const char TOK_HELP[] PROGMEM	= "help";		//displays list of commands
 const char TOK_SET[] PROGMEM	= "set";		//set <# of watched var> <int value>
 const char TOK_VIEW[] PROGMEM	= "view";		//view <# of watched var>
@@ -42,22 +42,12 @@ enum CMD {
 void clear_buff(void);
 void term_process(void);
 
-/* command callbacks */
-void cmd_view(void);
-void cmd_follow(void);
-void cmd_set_get(void);
-void cmd_set_set(void);
-void cmd_motor_pick(void);
-void cmd_motor_set(void);
-
 /* command variables */
 unsigned int dbg_index;
-unsigned char motor_index;
 
 /* terminal state */
 char buff[BUFF_LEN];
 unsigned int pos;
-void (*callback)(void) = NULL; 
 
 void clear_buff(void) {
 	//fill buff with spaces
@@ -79,9 +69,6 @@ void term_consume(char c) {
 			bprintf("\n");
 			term_process();
 			if(mode==CMD) bprintf("\n>");
-			clear_buff();
-		} else if(mode==BUFFER) {
-			callback();
 			clear_buff();
 		} else if(mode==FOLLOWING) {
 			mode = CMD;
@@ -140,6 +127,8 @@ void term_process(void) {
 		if(cmp(i, buff)) cmd_i = i;
 	}
 	
+	unsigned int a, b;
+	float fa, fb;
 	switch(cmd_i) {
 		case HELP:
 			bprintf("< commands >\n");
@@ -149,8 +138,9 @@ void term_process(void) {
 					"follow\t- view changes\n");
 			break;
 		case SET:
-			callback = &cmd_set_get;
-			goto var_select;
+			sscanf(buff, "%*s %d %d", &a, &b);
+			dbg_set(a, &b, INT);
+			break;
 		case ALL:
 			bprintf("| %d vars\t|\n", dbg_watch_count);
 			for(unsigned char i=0; i<dbg_watch_count; i++) {
@@ -160,90 +150,20 @@ void term_process(void) {
 			}
 			break;
 		case VIEW:
-			callback = &cmd_view;
-			goto var_select;
+			sscanf(buff, "%*s %d", &a);
+			bprintf("val is ");
+			dbg_print(a);
+			break;
 		case FOLLOW:
-			callback = &cmd_follow;
-
-			var_select:
-			bprintf("%d vars.\n", dbg_watch_count);
-			if(dbg_watch_count!=0) {
-				bprintf("which?: ");
-				mode = BUFFER;
-			}
-
+			sscanf(buff, "%*s %d %d", &a);
+			mode = FOLLOWING;
+			create_thread(&update, STACK_DEFAULT, 1, "follower_thread");
 			break;
 		case MOTOR:
-			callback = &cmd_motor_pick;
-			bprintf("which?: ");
-			mode = BUFFER;
+			sscanf(buff, "%*s %d %d", &a, &b);
+			motor_set_vel(a, b);
 			break;
 		default:
 			bprintf("not understood.\n");
 	}
-}
-
-unsigned char cmd_set_id;
-void cmd_set_get(void) {
-	cmd_set_id = atof(buff);
-	if(cmd_set_id<dbg_watch_count) {
-		callback = &cmd_set_set;
-		bprintf("\nvalue?: ");
-	} else {
-		mode = CMD;
-		bprintf("\ninvalid\n>");
-	}
-}
-
-void cmd_set_set(void) {
-	int intval;
-	float floatval;
-	switch(dbg_type(cmd_set_id)) {
-		case INT:
-			intval = atof(buff);
-			dbg_set(cmd_set_id, &intval, INT);
-			break;
-		case FLOAT:
-			floatval = atof(buff);
-			dbg_set(cmd_set_id, &floatval, FLOAT);
-			break;
-	}
-
-	mode = CMD;
-	bprintf("\n>");
-}
-
-void cmd_view(void) {
-	unsigned char id = atof(buff);
-	if(id>=0 && id<dbg_watch_count) {
-		bprintf("\nval=");
-		dbg_print(id);
-	} else {
-		bprintf("\ninvalid");
-	}
-
-	mode = CMD;
-	bprintf("\n>");
-}
-
-void cmd_follow(void) {
-	dbg_index = atof(buff);
-
-	mode = FOLLOWING;
-	create_thread(&update, STACK_DEFAULT, 1, "follower_thread");
-}
-
-void cmd_motor_pick(void) {
-	callback = &cmd_motor_set;
-	motor_index = atof(buff);
-	bprintf("\nvalue?: ");
-}
-
-void cmd_motor_set(void) {
-	unsigned char level = atof(buff);
-	motor_set_vel(motor_index, level);
-	bprintf("\nset motor %d to %d", motor_index, level);
-
-	mode = CMD;
-	bprintf("\n>");
 }
