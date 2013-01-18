@@ -63,6 +63,7 @@ void term_init(void) {
 void term_consume(char c) {
 	if(c=='\r') {
 		if(mode==CMD) {
+			bprintf("\n");
 			term_process();
 			bprintf("\n");
 			term_init();
@@ -130,6 +131,12 @@ void term_process(void) {
 		case SET:
 			break;
 		case ALL:
+			bprintf("== %d vars ==\n", dbg_watch_count);
+			for(unsigned char i=0; i<dbg_watch_count; i++) {
+				bprintf("%d:\t", i);
+				dbg_print(i);
+				bprintf("\n");
+			}
 			break;
 		case VIEW:
 			callback = &cmd_view;
@@ -138,7 +145,6 @@ void term_process(void) {
 			callback = &cmd_follow;
 
 			view_print:
-			bprintf("\n");
 			bprintf("%d vars.\n", dbg_watch_count);
 			if(dbg_watch_count!=0) {
 				bprintf("which?: ");
