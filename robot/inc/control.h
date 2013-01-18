@@ -10,7 +10,7 @@
 #define ENCODER_RIGHT	1
 #define ENCODER_CENTER	3
 
-//NAV CONTROLLER DATA
+/* nav controller data */
 typedef struct {
 	float speed;
 	int target;
@@ -19,7 +19,7 @@ typedef struct {
 	float slope;
 } nav_data;
 
-//PID CONTROLLER DATA
+/* PID controller data */
 typedef struct {
 	float epsilon;
 	float dt;
@@ -33,6 +33,7 @@ typedef struct {
 	int x;
 	int y;
 	float heading;
+	bool obstructed;	//whether the robot is having difficulty moving
 } robot;
 
 extern robot bot; 

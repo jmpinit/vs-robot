@@ -5,6 +5,8 @@
 #include "inc/control.h"
 #include "inc/util_math.h"
 
+#define CURRENT_BLOCKED	10	//indicator of obstruction
+#define CURRENT_MAX		15	//danger level for motors
 #define TICKS_PER_VPS	1	//conversion between encoders and VPS
 #define MAX_SPEED		245	//the fastest the robot will go (leave room for PID)
 
@@ -105,8 +107,10 @@ void tick_speed(void) {
 }
 
 void tick_state(void) {
+	//heading
 	bot.heading = gyro_absolute();
 
+	//position
 	if(vps_is_shit()) {
 		int ticks = encoder_read(ENCODER_CENTER);
 		float d = convert_encoder(ticks);
@@ -117,6 +121,16 @@ void tick_state(void) {
 		bot.x = vps_x;
 		bot.y = vps_y;
 	}
+
+	//obstruction
+	bool obstructed = false;
+	for(unsigned char i=0; i<4; i++) {
+		if(motor_get_current(i)>CURRENT_BLOCKED) obstructed = true;
+		//shut off burning motors
+		if(motor_get_current(i)>CURRENT_MAX) motor_set_vel(i, 0);
+	}
+
+	bot.obstructed = obstructed;
 }
 
 int navigator(void) {
