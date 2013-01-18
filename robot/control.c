@@ -20,7 +20,7 @@ void move_to(int x, int y) {
 		vps_update();
 
 		//are we there yet?
-		
+		if(distance(bot.x, bot.y, x, y)) break;
 
 		//move towards the target
 		nav_set_heading(angle_to_target(x, y));
@@ -54,9 +54,9 @@ float pid_calc(pid_data prefs, float current, float target) {
    Motor control abstraction layer
 */
 
-void nav_init(void) {
-	create_thread(&motor_controller, STACK_DEFAULT, 0, "nav_thread");
+robot bot;
 
+void nav_init(void) {
 	//init pid settings
 	pid_linear.epsilon	= 0.1;
 	pid_linear.dt		= 0.1;
@@ -69,6 +69,8 @@ void nav_init(void) {
 	nav_settings.target = 128;
 	nav_settings.heading = 0;
 	nav_settings.slope = 5;
+
+	create_thread(&navigator, STACK_DEFAULT, 0, "nav_thread");
 }
 
 void nav_set_heading(float heading) {
@@ -80,27 +82,36 @@ void nav_set_speed(int speed) {
 	printf("speed changed\n");
 }
 
-int motor_controller(void) {
+void tick_speed(void) {
+	if(nav_settings.speed<nav_settings.target-nav_settings.slope) {
+		nav_settings.speed += nav_settings.slope;
+	} else if(nav_settings.speed>nav_settings.target+nav_settings.slope) {
+		nav_settings.speed -= nav_settings.slope;
+	} else {
+		nav_settings.speed = nav_settings.target;
+	}
+
+	float heading = gyro_absolute();
+	float output = pid_calc(pid_linear, heading, nav_settings.heading);
+
+	if(abs(bound(-180, heading-nav_settings.heading, 180))<60) {
+		motor_set_vel(MOTOR_LEFT, nav_settings.speed + output);
+		motor_set_vel(MOTOR_RIGHT, nav_settings.speed - output);
+	} else {
+		motor_set_vel(MOTOR_LEFT, output);
+		motor_set_vel(MOTOR_RIGHT, -output);
+	}
+}
+
+void tick_state(void) {
+	bot.x = vps_x;
+	bot.y = vps_y;
+}
+
+int navigator(void) {
 	for(;;) {
-		if(nav_settings.speed<nav_settings.target-nav_settings.slope) {
-			nav_settings.speed += nav_settings.slope;
-		} else if(nav_settings.speed>nav_settings.target+nav_settings.slope) {
-			nav_settings.speed -= nav_settings.slope;
-		} else {
-			nav_settings.speed = nav_settings.target;
-		}
-
-		float heading = gyro_absolute();
-		float output = pid_calc(pid_linear, heading, nav_settings.heading);
-
-		if(abs(bound(-180, heading-nav_settings.heading, 180))<60) {
-			output /= 4.0;
-			motor_set_vel(MOTOR_LEFT, nav_settings.speed + output);
-			motor_set_vel(MOTOR_RIGHT, nav_settings.speed - output);
-		} else {
-			motor_set_vel(MOTOR_LEFT, output);
-			motor_set_vel(MOTOR_RIGHT, -output);
-		}
+		tick_speed();
+		tick_pos();
 
 		yield();
 	}

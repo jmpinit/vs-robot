@@ -15,6 +15,7 @@ enum MODE {
 //TODO add fset command (set a floating point value)
 const char TOK_HELP[] PROGMEM	= "help";		//displays list of commands
 const char TOK_SET[] PROGMEM	= "set";		//set <# of watched var> <int value>
+const char TOK_FSET[] PROGMEM	= "fset";		//set <# of watched var> <float value>
 const char TOK_VIEW[] PROGMEM	= "view";		//view <# of watched var>
 const char TOK_ALL[] PROGMEM	= "all";		//see state of all watched variables
 const char TOK_FOLLOW[] PROGMEM	= "follow";		//continuously watch
@@ -23,6 +24,7 @@ const char TOK_MOTOR[] PROGMEM	= "motor";		//control motor
 const char *cmds[] PROGMEM = {
 	TOK_HELP,
 	TOK_SET,
+	TOK_FSET,
 	TOK_VIEW,
 	TOK_ALL,
 	TOK_FOLLOW,
@@ -32,6 +34,7 @@ const char *cmds[] PROGMEM = {
 enum CMD {
 	HELP,
 	SET,
+	FSET,
 	VIEW,
 	ALL,
 	FOLLOW,
@@ -132,14 +135,20 @@ void term_process(void) {
 	switch(cmd_i) {
 		case HELP:
 			bprintf("< commands >\n");
-			bprintf("set\t- edit value\n"
+			bprintf("set\t- edit int value\n"
+					"fset\t- edit float value\n"
 					"all\t- view all\n"
 					"view\t- view one\n"
-					"follow\t- view changes\n");
+					"follow\t- view changes\n"
+					"motor\t- control motor\n");
 			break;
 		case SET:
 			sscanf(buff, "%*s %d %d", &a, &b);
 			dbg_set(a, &b, INT);
+			break;
+		case FSET:
+			sscanf(buff, "%*s %d %f", &a, &fa);
+			dbg_set(a, &fa, FLOAT);
 			break;
 		case ALL:
 			bprintf("| %d vars\t|\n", dbg_watch_count);
