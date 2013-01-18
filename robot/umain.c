@@ -26,6 +26,13 @@ int usetup(void) {
 int umain(void) {
 	//nav_init();
 
+	motor_set_vel(0, 128);
+	motor_set_vel(1, 128);
+	while(true) {
+		printf("[%d, %d]\n", motor_get_current(0), motor_get_current(1));
+		pause(100);
+	}
+
 	float gyro_pos;
 	int encoder_val;
 	dbg_watch(&gyro_pos, FLOAT);
