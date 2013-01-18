@@ -138,26 +138,27 @@ ISR(USART1_RX_vect) {
 			term_consume(data);
 			break;
 		case CONTROL:
+			#define SPEED 170
 			switch(data) {
 				case 'q':
-					motor_set_vel(MOTOR_LEFT, 128);
+					motor_set_vel(MOTOR_LEFT, SPEED);
 					break;
 				case 'w':
-					motor_set_vel(MOTOR_LEFT, 128);
-					motor_set_vel(MOTOR_RIGHT, 128);
+					motor_set_vel(MOTOR_LEFT, SPEED);
+					motor_set_vel(MOTOR_RIGHT, SPEED);
 					break;
 				case 'e':
-					motor_set_vel(MOTOR_RIGHT, 128);
+					motor_set_vel(MOTOR_RIGHT, SPEED);
 					break;
 				case 'a':
-					motor_set_vel(MOTOR_LEFT, -128);
+					motor_set_vel(MOTOR_LEFT, -SPEED);
 					break;
 				case 'd':
-					motor_set_vel(MOTOR_RIGHT, -128);
+					motor_set_vel(MOTOR_RIGHT, -SPEED);
 					break;
 				case 'z':
-					motor_set_vel(MOTOR_LEFT, -128);
-					motor_set_vel(MOTOR_RIGHT, -128);
+					motor_set_vel(MOTOR_LEFT, -SPEED);
+					motor_set_vel(MOTOR_RIGHT, -SPEED);
 					break;
 				case ' ':
 					bprintf("waiting for commands...\n");
