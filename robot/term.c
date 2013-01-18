@@ -1,7 +1,7 @@
 #include <avr/pgmspace.h>
 #include <joyos.h>
-#include "term.h"
-#include "debug.h"
+#include "inc/term.h"
+#include "inc/debug.h"
 
 #define BUFF_LEN	64
 #define NUM_CMDS	3

@@ -1,5 +1,5 @@
 #include <joyos.h>
-#include "../inc/manager.h"
+#include "inc/manager.h"
 
 bool team;
 

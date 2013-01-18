@@ -1,10 +1,10 @@
 #include <joyos.h>
 #include <math.h>
 
-#include "control.h"
-#include "debug.h"
-#include "sensors.h"
-#include "util_math.h"
+#include "inc/control.h"
+#include "inc/debug.h"
+#include "inc/sensors.h"
+#include "inc/util_math.h"
 
 #define GYRO_PORT		8
 #define LSB_US_PER_DEG	1400000

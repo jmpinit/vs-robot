@@ -1,5 +1,5 @@
 #include <math.h>
-#include "util_math.h"
+#include "inc/util_math.h"
 
 int within(int min, int val, int max) {
 	if(val<min) return min;

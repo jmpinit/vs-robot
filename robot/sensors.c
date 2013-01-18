@@ -1,6 +1,6 @@
 #include <joyos.h>
-#include "util_math.h"
-#include "sensors.h"
+#include "inc/util_math.h"
+#include "inc/sensors.h"
 
 static float gyro_transform = 0;
 

@@ -1,9 +1,9 @@
 #include <avr/interrupt.h>
 #include <joyos.h>
-#include "debug.h"
-#include "control.h"
-#include "sensors.h"
-#include "term.h"
+#include "inc/debug.h"
+#include "inc/control.h"
+#include "inc/sensors.h"
+#include "inc/term.h"
 
 /*
    DEBUG MAGIC
