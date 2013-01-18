@@ -4,7 +4,6 @@
 #include "inc/debug.h"
 
 #define BUFF_LEN	64
-#define NUM_CMDS	3
 
 //determines where input should go
 enum MODE {
@@ -14,12 +13,14 @@ enum MODE {
 } mode;
 
 /* command info */
+const char TOK_HELP[] PROGMEM	= "help";		//displays list of commands
 const char TOK_SET[] PROGMEM	= "set";		//set <# of watched var> <int value>
 const char TOK_VIEW[] PROGMEM	= "view";		//view <# of watched var>
-const char TOK_ALL[] PROGMEM	= "all";		//continuously watch
+const char TOK_ALL[] PROGMEM	= "all";		//see state of all watched variables
 const char TOK_FOLLOW[] PROGMEM	= "follow";		//continuously watch
 
 const char *cmds[] PROGMEM = {
+	TOK_HELP,
 	TOK_SET,
 	TOK_VIEW,
 	TOK_ALL,
@@ -27,6 +28,7 @@ const char *cmds[] PROGMEM = {
 };
 
 enum CMD {
+	HELP,
 	SET,
 	VIEW,
 	ALL,
@@ -52,12 +54,12 @@ void clear_buff(void) {
 	//fill buff with spaces
 	for(unsigned int i=0; i<BUFF_LEN; i++)
 		buff[i] = ' ';
+	pos = 0;
 }
 
 void term_init(void) {
 	clear_buff();
 	mode = CMD;
-	pos = 0;
 
 	bprintf(">");
 }
@@ -67,13 +69,14 @@ void term_consume(char c) {
 		if(mode==CMD) {
 			bprintf("\n");
 			term_process();
-			bprintf("\n");
-			term_init();
+			if(mode==CMD) bprintf("\n>");
+			clear_buff();
 		} else if(mode==BUFFER) {
+			printf("calling back");
 			callback();
 			clear_buff();
-		} else if(mode==FOLLOW) {
-			if(c==' ') mode = CMD;
+		} else if(mode==FOLLOWING) {
+			mode = CMD;
 			bprintf("\n");
 			term_init();
 		}
@@ -114,7 +117,7 @@ bool cmp(unsigned char cmd, char *b) {
 
 unsigned int dbg_index;
 int update(void) {
-	while(mode==FOLLOW) {
+	while(mode==FOLLOWING) {
 		dbg_print(dbg_index);
 		bprintf("\n");
 		yield();
@@ -126,16 +129,23 @@ int update(void) {
 void term_process(void) {
 	//TODO exec commands
 	enum CMD cmd_i = 255;
-	for(unsigned char i=0; i<NUM_CMDS; i++) {
+	for(unsigned char i=0; i<ARRAY_SIZE(cmds); i++) {
 		if(cmp(i, buff)) cmd_i = i;
 	}
 	
 	switch(cmd_i) {
+		case HELP:
+			bprintf("< commands >\n");
+			bprintf("set\t- edit value\n"
+					"all\t- view all\n"
+					"view\t- view one\n"
+					"follow\t- view changes\n");
+			break;
 		case SET:
 			callback = &cmd_set_get;
 			goto var_select;
 		case ALL:
-			bprintf("== %d vars ==\n", dbg_watch_count);
+			bprintf("| %d vars\t|\n", dbg_watch_count);
 			for(unsigned char i=0; i<dbg_watch_count; i++) {
 				bprintf("%d:\t", i);
 				dbg_print(i);
@@ -152,7 +162,9 @@ void term_process(void) {
 			bprintf("%d vars.\n", dbg_watch_count);
 			if(dbg_watch_count!=0) {
 				bprintf("which?: ");
+				mode = BUFFER;
 			}
+
 			break;
 		default:
 			bprintf("not understood.\n");
@@ -186,12 +198,13 @@ void cmd_view(void) {
 	unsigned char id = atof(buff);
 	bprintf("\nval=");
 	dbg_print(id);
+	bprintf("\n>");
 
 	mode = CMD;
 }
 
 void cmd_follow(void) {
 	bprintf("\nspace to exit\n");
-	mode = FOLLOW;
+	mode = FOLLOWING;
 	create_thread(&update, STACK_DEFAULT, 1, "follower_thread");
 }
