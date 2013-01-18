@@ -19,30 +19,22 @@ int usetup(void) {
 	//initialize the gyro
 	gyro_init(GYRO_PORT, LSB_US_PER_DEG, 500L);
 	pause(100);
-	vps_update();
-	gyro_zero();
-
-	//led_clear();
 
 	return 0;
 }
 
 int umain(void) {
-	float gyro_val = 0;
+	nav_init();
 
-	dbg_watch(&gyro_val, FLOAT);
+	float gyro_pos;
+	int encoder_val;
+	dbg_watch(&gyro_pos, FLOAT);
+	dbg_watch(&encoder_val, INT);
 
 	while(true) {
-		gyro_val = gyro_get_degrees();
-		printf("val=%f\n", gyro_val);
-		pause(100);
-	}
-
-	ctrl_init();
-
-	while(1) {
-		vps_update();
-		move_to(vps_target_x, vps_target_y);
+		gyro_pos = gyro_get_degrees();
+		encoder_val = encoder_read(24);
+		//TODO high-level programming
 	}
 
     return 0;

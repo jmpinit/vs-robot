@@ -32,7 +32,7 @@ enum TYPE dbg_type(unsigned char id) {
 	return watchees[id].type;
 }
 
-void dbg_print(unsigned int id) {
+void dbg_print(unsigned char id) {
 	void* address = watchees[id].address;
 	int i;
 	float f;
@@ -103,12 +103,17 @@ void bprintf(const char *str, ...) {
 	vfprintf(blue_stdio, str, ap);
 }
 
-unsigned char mode = MODE_WAIT;
+enum {
+	WAIT,
+	TERMINAL,
+	CONTROL
+} comm_mode;
+
 ISR(USART1_RX_vect) {
 	char data = UDR1;
 
-	switch(mode) {
-		case MODE_WAIT:
+	switch(comm_mode) {
+		case WAIT:
 			switch(data) {
 				case ' ':	//KILL
 					bprintf("killing...\n");
@@ -120,19 +125,19 @@ ISR(USART1_RX_vect) {
 					break;
 				case '!':
 					bprintf("==VS ROBOT TERM==\n");
-					mode = MODE_TERM;
+					comm_mode = TERMINAL;
 					term_init();
 					break;
 				case 'r':
 					bprintf("remote control mode. space to escape.\n");
-					mode = MODE_CONTROL;
+					comm_mode = CONTROL;
 			}
 			break;
-		case MODE_TERM:
+		case TERMINAL:
 			//TODO ~ exits terminal
 			term_consume(data);
 			break;
-		case MODE_CONTROL:
+		case CONTROL:
 			switch(data) {
 				case 'q':
 					motor_set_vel(MOTOR_LEFT, 128);
@@ -156,7 +161,7 @@ ISR(USART1_RX_vect) {
 					break;
 				case ' ':
 					bprintf("waiting for commands...\n");
-					mode = MODE_WAIT;
+					comm_mode = WAIT;
 					break;
 				default:
 					motor_brake(MOTOR_LEFT);

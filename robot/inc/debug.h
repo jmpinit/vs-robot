@@ -7,10 +7,6 @@
 #define BAUD	19200
 #define MYUBBR	FOSC/16/BAUD-1
 
-#define MODE_WAIT		0
-#define MODE_TERM		1
-#define MODE_CONTROL	2
-
 extern FILE* blue_stdio;
 
 extern unsigned char dbg_watch_count;
