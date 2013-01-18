@@ -9,7 +9,8 @@
 //determines where input should go
 enum MODE {
 	CMD,
-	BUFF
+	BUFFER,
+	FOLLOWING
 } mode;
 
 /* command info */
@@ -63,9 +64,14 @@ void term_consume(char c) {
 	if(c=='\r') {
 		if(mode==CMD) {
 			term_process();
+			bprintf("\n");
 			term_init();
-		} else {
+		} else if(mode==BUFFER) {
 			callback();
+		} else if(mode==FOLLOW) {
+			if(c==' ') mode = CMD;
+			bprintf("\n");
+			term_init();
 		}
 	} else {
 		if(c==8 || c==127) {	//backspace / delete
@@ -104,7 +110,7 @@ bool cmp(unsigned char cmd, char *b) {
 
 unsigned int dbg_index;
 int update(void) {
-	while(true) {
+	while(mode==FOLLOW) {
 		dbg_print(dbg_index);
 		bprintf("\n");
 		yield();
@@ -152,8 +158,7 @@ void cmd_view(void) {
 }
 
 void cmd_follow(void) {
-	bprintf("\n");
+	bprintf("\nspace to exit\n");
+	mode = FOLLOW;
 	create_thread(&update, STACK_DEFAULT, 1, "follower_thread");
-
-	mode = CMD;
 }
