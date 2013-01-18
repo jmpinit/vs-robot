@@ -3,30 +3,38 @@
 #include "term.h"
 #include "debug.h"
 
-#define NUM_CMDS 3
+#define BUFF_LEN	64
+#define NUM_CMDS	3
 
-const char TICKLE[] PROGMEM = "tickle";
-const char POKE[] PROGMEM = "poke";
-const char EXIT[] PROGMEM = "exit";
+/* command info */
+const char TOK_SET[] PROGMEM = "set";		//set <# of watched var> <int value>
+const char TOK_VIEW[] PROGMEM = "view";		//view <# of watched var>
+const char TOK_FOLLOW[] PROGMEM = "follow";	//continuously watch
 
 const char *cmds[] PROGMEM = {
-	TICKLE,
-	POKE,
-	EXIT
+	TOK_SET,
+	TOK_VIEW,
+	TOK_FOLLOW
+};
+
+enum CMD {
+	SET,
+	VIEW,
+	FOLLOW
 };
 
 void term_process(void);
 
-char buff[TERM_LEN];
+char buff[BUFF_LEN];
 unsigned int pos;
 void term_init(void) {
 	//fill buff with spaces
-	for(unsigned int i=0; i<TERM_LEN; i++)
+	for(unsigned int i=0; i<BUFF_LEN; i++)
 		buff[i] = ' ';
 
 	pos = 0;
 
-	blue_print("\n\r>");
+	bprintf(">");
 }
 
 void term_consume(char c) {
@@ -41,10 +49,10 @@ void term_consume(char c) {
 				buff[pos] = ' ';
 
 				//delete on their terminal
-				blue_print("\b \b");
+				bprintf("\b \b");
 			}
 		} else {
-			if(pos<TERM_LEN) {
+			if(pos<BUFF_LEN) {
 				//store in buff
 				buff[pos] = c;
 				pos++;
@@ -68,24 +76,78 @@ bool cmp(unsigned char cmd, char *b) {
 	return true;
 }
 
+/*
+unsigned int get_param(unsigned char num) {
+	//find the start of it
+	for(unsigned char i=0; i<num; i++) {
+		unsigned char pos = 0;
+		while(buff[pos]!=' ') pos++;
+		pos++;
+	}
+
+	//return failure if that parameter doesn't exist
+	if(pos>=BUFF_LEN) return -1;
+
+	//count the digits in the number
+	unsigned char end = pos;
+	while(buff[end]>=48 && buff[end]<=57) end++;
+	unsigned char length = end-pos;
+
+	//calculate the value of the number
+	unsigned char total = 0;
+	for(unsigned char digit=length-1; digit>=0; digit--) {
+		unsigned char val = buff[pos] - 48; //get the value
+		pos++;
+
+		unsigned char tens = 1;
+		for(int t=0; t<digit; t++) tens *= 10;
+		total += val*tens;
+	}
+
+	return total;
+}*/
+
+unsigned int dbg_index;
+int update(void) {
+	while(true) {
+		dbg_print(dbg_index);
+		bprintf("\n");
+		yield();
+	}
+
+	return 0;
+}
+
 void term_process(void) {
 	//TODO exec commands
-	unsigned char cmd_i = 255;
+	enum CMD cmd_i = 255;
 	for(unsigned char i=0; i<NUM_CMDS; i++) {
 		if(cmp(i, buff)) cmd_i = i;
 	}
 	
 	switch(cmd_i) {
-		case 0:
-			blue_print("\n\rhehehehe");
+		case SET:
 			break;
-		case 1:
-			blue_print("\n\rouch! stop that.");
+		case VIEW:
+			bprintf("\n");
+			bprintf("tracking %d variables.\n", dbg_watch_count);
+			if(dbg_watch_count==0) {
+				bprintf("none to view.\n");
+			} else {
+				bprintf("enter # to view: ");
+				unsigned int index;
+				fscanf(blue_stdio, "%d", &index);
+				bprintf("\nvalue is ");
+				dbg_print(0);
+			}
 			break;
-		case 2:
-			blue_print("\n\ri can't do that dave.");
+		case FOLLOW:
+			bprintf("enter # to view: ");
+			fscanf(blue_stdio, "%d", &dbg_index);
+			bprintf("\n");
+			create_thread(&update, STACK_DEFAULT, 1, "follower_thread");
 			break;
 		default:
-			blue_print("\n\ri am my own master");
+			bprintf("not understood.\n");
 	}
 }

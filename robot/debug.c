@@ -6,8 +6,40 @@
 #include "term.h"
 
 /*
+   DEBUG MAGIC
+*/
+
+variable* watchees[NUM_WATCHED];
+unsigned char dbg_watch_count = 0;
+void dbg_watch(variable* watchee) {
+	watchees[dbg_watch_count] = watchee;
+	dbg_watch_count++;
+}
+
+void dbg_print(unsigned int id) {
+	void* address = watchees[id]->address;
+	int i;
+	float f;
+
+	switch(watchees[id]->type) {
+		case INT:
+			i = *((int *)address);
+			bprintf("%d", i);
+			break;
+		case FLOAT:
+			f = *((float *)address);
+			bprintf("%f", f);
+			break;
+		default:
+			bprintf("unrecognized");
+	}
+}
+
+/*
    BLUETOOTH
 */
+
+FILE* blue_stdio;
 
 void blue_init(unsigned int ubbr) {
 	UBRR1H = (unsigned char)(ubbr>>8);
@@ -16,13 +48,18 @@ void blue_init(unsigned int ubbr) {
 	UCSR1B = (1<<RXCIE)|(1<<RXEN)|(1<<TXEN);
 	//set frame format: 8 data, 2 stop
 	UCSR1C = (1<<USBS)|(3<<UCSZ0);
-	
+
+	blue_stdio = fdevopen(blue_putc, blue_getc);
 }
 
 unsigned char blue_rx(void) {
 	//wait for data
 	while(!(UCSR1A&(1<<RXC))) asm volatile ("NOP");
 	return UDR1;
+}
+
+int blue_getc(FILE *stream) {
+	return (int)blue_rx();;
 }
 
 void blue_tx(unsigned char data) {
@@ -32,9 +69,22 @@ void blue_tx(unsigned char data) {
 	UDR1 = data;
 }
 
+int blue_putc(char c, FILE *stream) {
+	if(c=='\n') blue_putc('\r', stream);
+	blue_tx(c);
+	return 0;
+}
+
 void blue_print(char *data) {
 	char c;
 	while((c=*(data++))) blue_tx(c);
+}
+
+void bprintf(const char *str, ...) {
+	va_list ap;
+
+	va_start(ap, str);         /* Initialize the argument list. */
+	vfprintf(blue_stdio, str, ap);
 }
 
 unsigned char mode = MODE_WAIT;
@@ -45,7 +95,7 @@ ISR(USART1_RX_vect) {
 		case MODE_WAIT:
 			switch(data) {
 				case ' ':	//KILL
-					blue_print("killing...\n\r");
+					bprintf("killing...\n");
 
 					//stop everything
 					motor_brake(MOTOR_LEFT);
@@ -53,12 +103,12 @@ ISR(USART1_RX_vect) {
 					halt();
 					break;
 				case '!':
-					blue_print("entering terminal...\n\r");
+					bprintf("==VS ROBOT TERM==\n");
 					mode = MODE_TERM;
 					term_init();
 					break;
 				case 'r':
-					blue_print("remote control mode. space to escape.\n\r");
+					bprintf("remote control mode. space to escape.\n");
 					mode = MODE_CONTROL;
 			}
 			break;
@@ -89,7 +139,7 @@ ISR(USART1_RX_vect) {
 					motor_set_vel(MOTOR_RIGHT, -128);
 					break;
 				case ' ':
-					blue_print("waiting for commands...\n");
+					bprintf("waiting for commands...\n");
 					mode = MODE_WAIT;
 					break;
 				default:
@@ -102,7 +152,7 @@ ISR(USART1_RX_vect) {
 
 /*
    LED CONTROL
-   */
+*/
 
 static int ledstate = 0;
 static int ledtimer = 0;

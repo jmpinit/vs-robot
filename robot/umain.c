@@ -33,8 +33,15 @@ int usetup(void) {
 }
 
 int umain(void) {
+	float gyro_val = 0;
+
+	variable dbg_gyro = { FLOAT, &gyro_val };
+	dbg_watch(&dbg_gyro);
+
 	while(true) {
-		asm volatile ("NOP");
+		gyro_val = gyro_get_degrees();
+		printf("val=%f\n", gyro_val);
+		pause(100);
 	}
 
 	ctrl_init();
