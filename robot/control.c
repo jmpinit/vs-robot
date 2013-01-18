@@ -5,7 +5,8 @@
 #include "inc/control.h"
 #include "inc/util_math.h"
 
-#define MAX_SPEED	245	//the fastest the robot will go (leave room for PID)
+#define TICKS_PER_VPS	1	//conversion between encoders and VPS
+#define MAX_SPEED		245	//the fastest the robot will go (leave room for PID)
 
 /* nav settings */
 static pid_data pid_linear;
@@ -104,8 +105,18 @@ void tick_speed(void) {
 }
 
 void tick_state(void) {
-	bot.x = vps_x;
-	bot.y = vps_y;
+	bot.heading = gyro_absolute();
+
+	if(vps_is_shit()) {
+		int ticks = encoder_read(ENCODER_CENTER);
+		float d = convert_encoder(ticks);
+
+		bot.x += d*cos(bot.heading);
+		bot.y += d*sin(bot.heading);
+	} else {
+		bot.x = vps_x;
+		bot.y = vps_y;
+	}
 }
 
 int navigator(void) {
@@ -117,4 +128,8 @@ int navigator(void) {
 	}
 
 	return 0;
+}
+
+float convert_encoder(int ticks) {
+	return ticks/TICKS_PER_VPS;
 }

@@ -51,6 +51,8 @@ void nav_set_speed(int speed);
 void nav_set_heading(float heading);
 void nav_init(void);
 
+float convert_encoder(int ticks);
+
 void move_to(int x, int y);
 float pid_calc(pid_data prefs, float current, float target);
 
