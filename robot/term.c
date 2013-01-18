@@ -40,6 +40,8 @@ void term_process(void);
 /* callbacks for commands */
 void cmd_view(void);
 void cmd_follow(void);
+void cmd_set_get(void);
+void cmd_set_set(void);
 
 /* terminal state */
 char buff[BUFF_LEN];
@@ -69,6 +71,7 @@ void term_consume(char c) {
 			term_init();
 		} else if(mode==BUFFER) {
 			callback();
+			clear_buff();
 		} else if(mode==FOLLOW) {
 			if(c==' ') mode = CMD;
 			bprintf("\n");
@@ -129,7 +132,8 @@ void term_process(void) {
 	
 	switch(cmd_i) {
 		case SET:
-			break;
+			callback = &cmd_set_get;
+			goto var_select;
 		case ALL:
 			bprintf("== %d vars ==\n", dbg_watch_count);
 			for(unsigned char i=0; i<dbg_watch_count; i++) {
@@ -140,11 +144,11 @@ void term_process(void) {
 			break;
 		case VIEW:
 			callback = &cmd_view;
-			goto view_print;
+			goto var_select;
 		case FOLLOW:
 			callback = &cmd_follow;
 
-			view_print:
+			var_select:
 			bprintf("%d vars.\n", dbg_watch_count);
 			if(dbg_watch_count!=0) {
 				bprintf("which?: ");
@@ -153,6 +157,29 @@ void term_process(void) {
 		default:
 			bprintf("not understood.\n");
 	}
+}
+
+unsigned char cmd_set_id;
+void cmd_set_get(void) {
+	cmd_set_id = atof(buff);
+	callback = &cmd_set_set;
+}
+
+void cmd_set_set(void) {
+	int intval;
+	float floatval;
+	switch(dbg_type(cmd_set_id)) {
+		case INT:
+			intval = atof(buff);
+			dbg_set(cmd_set_id, &intval, INT);
+			break;
+		case FLOAT:
+			floatval = atof(buff);
+			dbg_set(cmd_set_id, &floatval, FLOAT);
+			break;
+	}
+
+	mode = CMD;
 }
 
 void cmd_view(void) {

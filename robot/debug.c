@@ -17,6 +17,21 @@ void dbg_watch(void* var, enum TYPE type) {
 	dbg_watch_count++;
 }
 
+void dbg_set(unsigned char id, void* ptr_val, enum TYPE type) {
+	switch(type) {
+		case INT:
+			*((int *)watchees[id].address) = *((int *)ptr_val);
+			break;
+		case FLOAT:
+			*((float *)watchees[id].address) = *((float *)ptr_val);
+			break;
+	}
+}
+
+enum TYPE dbg_type(unsigned char id) {
+	return watchees[id].type;
+}
+
 void dbg_print(unsigned int id) {
 	void* address = watchees[id].address;
 	int i;

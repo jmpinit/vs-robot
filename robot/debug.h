@@ -26,7 +26,9 @@ typedef struct {
 } variable; 
 
 void dbg_watch(void* addr, enum TYPE type);	//start watching a variable
-void dbg_print(unsigned int id);	//print value of watchee over BT
+void dbg_print(unsigned char id);	//print value of watchee over BT
+void dbg_set(unsigned char id, void* val, enum TYPE type);
+enum TYPE dbg_type(unsigned char id);
 
 void blue_init(unsigned int ubbr);	//config USART1 for BT module and setup RX interrupt
 unsigned char blue_rx(void);		//wait for byte over BT and read it
