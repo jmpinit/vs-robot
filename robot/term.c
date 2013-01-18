@@ -72,7 +72,6 @@ void term_consume(char c) {
 			if(mode==CMD) bprintf("\n>");
 			clear_buff();
 		} else if(mode==BUFFER) {
-			printf("calling back");
 			callback();
 			clear_buff();
 		} else if(mode==FOLLOWING) {
@@ -120,7 +119,7 @@ int update(void) {
 	while(mode==FOLLOWING) {
 		dbg_print(dbg_index);
 		bprintf("\n");
-		yield();
+		pause(100);
 	}
 
 	return 0;
@@ -174,7 +173,13 @@ void term_process(void) {
 unsigned char cmd_set_id;
 void cmd_set_get(void) {
 	cmd_set_id = atof(buff);
-	callback = &cmd_set_set;
+	if(cmd_set_id<dbg_watch_count) {
+		callback = &cmd_set_set;
+		bprintf("\nvalue?: ");
+	} else {
+		mode = CMD;
+		bprintf("\ninvalid\n>");
+	}
 }
 
 void cmd_set_set(void) {
@@ -192,19 +197,25 @@ void cmd_set_set(void) {
 	}
 
 	mode = CMD;
+	bprintf("\n>");
 }
 
 void cmd_view(void) {
 	unsigned char id = atof(buff);
-	bprintf("\nval=");
-	dbg_print(id);
-	bprintf("\n>");
+	if(id>=0 && id<dbg_watch_count) {
+		bprintf("\nval=");
+		dbg_print(id);
+	} else {
+		bprintf("\ninvalid");
+	}
 
 	mode = CMD;
+	bprintf("\n>");
 }
 
 void cmd_follow(void) {
-	bprintf("\nspace to exit\n");
+	dbg_index = atof(buff);
+
 	mode = FOLLOWING;
 	create_thread(&update, STACK_DEFAULT, 1, "follower_thread");
 }
