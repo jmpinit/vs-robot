@@ -164,7 +164,7 @@ void term_process(void) {
 			dbg_print(a);
 			break;
 		case FOLLOW:
-			sscanf(buff, "%*s %d %d", &a);
+			sscanf(buff, "%*s %d", &dbg_index);
 			mode = FOLLOWING;
 			create_thread(&update, STACK_DEFAULT, 1, "follower_thread");
 			break;

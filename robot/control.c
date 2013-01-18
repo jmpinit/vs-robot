@@ -111,7 +111,7 @@ void tick_state(void) {
 int navigator(void) {
 	for(;;) {
 		tick_speed();
-		tick_pos();
+		tick_state();
 
 		yield();
 	}
