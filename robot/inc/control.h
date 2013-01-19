@@ -10,20 +10,6 @@
 #define ENCODER_RIGHT	25
 #define ENCODER_CENTER	27
 
-/* nav controller data */
-typedef struct {
-	float velocity;			//current velocity
-	float heading;			//current absolute heading
-
-	int target_velocity;	//velocity to approach
-	float target_heading;	//heading to approach
-
-	float a;				//linear acceleration
-	float w;				//radial acceleration
-} nav_data;
-
-static nav_data nav_settings;
-
 /* PID controller data */
 typedef struct {
 	float epsilon;
@@ -37,8 +23,16 @@ typedef struct {
 typedef struct {
 	int x;
 	int y;
-	float heading;
-	bool obstructed;	//whether the robot is having difficulty moving
+	bool obstructed;		//whether the robot is having difficulty moving
+	
+	float velocity;			//current velocity
+	float heading;			//current absolute heading
+
+	int target_velocity;	//velocity to approach
+	float target_heading;	//heading to approach
+
+	float a;				//linear acceleration
+	float w;				//radial acceleration
 } robot;
 
 extern robot bot; 

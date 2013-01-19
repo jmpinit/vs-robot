@@ -67,37 +67,37 @@ void nav_init(void) {
 	pid_linear.Ki		= 0.05;
 
 	//init the settings
-	nav_settings.a = 0.5;
-	nav_settings.w = 5;
+	bot.a = 0.5;
+	bot.w = 5;
 
 	create_thread(&navigator, STACK_DEFAULT, 0, "nav_thread");
 }
 
 void nav_set_heading(float heading) {
-	nav_settings.target_heading = heading;
+	bot.target_heading = heading;
 }
 
 void nav_set_velocity(int v) {
-	nav_settings.target_velocity = v;
+	bot.target_velocity = v;
 }
 
 void tick_motion(void) {
 	//forward acceleration
-	if(nav_settings.velocity<nav_settings.target_velocity) {
-		nav_settings.velocity += nav_settings.a;
-	} else if(nav_settings.velocity>nav_settings.target_velocity) {
-		nav_settings.velocity -= nav_settings.a;
+	if(bot.velocity<bot.target_velocity) {
+		bot.velocity += bot.a;
+	} else if(bot.velocity>bot.target_velocity) {
+		bot.velocity -= bot.a;
 	}
 
-	float output = pid_calc(&pid_linear, nav_settings.heading, nav_settings.target_heading);
+	float output = pid_calc(&pid_linear, bot.heading, bot.target_heading);
 
 	#define MAX_TURN	96
 	if(output<-MAX_TURN) output = -MAX_TURN;
 	if(output>MAX_TURN) output = MAX_TURN;
 
-	//if(abs(bound(-180, bot.heading-nav_settings.heading, 180))<45) {
-		motor_set_vel(MOTOR_LEFT, bound(-255, nav_settings.velocity - output, 255));
-		motor_set_vel(MOTOR_RIGHT, bound(-255, nav_settings.velocity + output, 255));
+	//if(abs(bound(-180, bot.heading-bot.heading, 180))<45) {
+		motor_set_vel(MOTOR_LEFT, bound(-255, bot.velocity - output, 255));
+		motor_set_vel(MOTOR_RIGHT, bound(-255, bot.velocity + output, 255));
 	/*} else {
 		motor_set_vel(MOTOR_LEFT, output);
 		motor_set_vel(MOTOR_RIGHT, -output);
@@ -106,7 +106,7 @@ void tick_motion(void) {
 
 void tick_state(void) {
 	//heading
-	nav_settings.heading = gyro_get_degrees();
+	bot.heading = gyro_get_degrees();
 
 	//position
 	if(vps_is_shit()) {
@@ -137,8 +137,6 @@ int navigator(void) {
 	for(;;) {
 		tick_state();
 		tick_motion();
-
-		//printf("[%f, %f]\n", nav_settings.target_heading, nav_settings.heading);
 
 		yield();
 	}
