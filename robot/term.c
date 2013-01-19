@@ -144,10 +144,12 @@ void term_process(void) {
 			break;
 		case SET:
 			sscanf(buff, "%*s %d %d", &a, &b);
+			bprintf("term: id=%d val=%d", a, b);
 			dbg_set(a, &b, INT);
 			break;
 		case FSET:
-			sscanf(buff, "%*s %d %f", &a, &fa);
+			sscanf(buff, "%*s %d %d", &a, &b);
+			fa = (float)a;
 			dbg_set(a, &fa, FLOAT);
 			break;
 		case ALL:
