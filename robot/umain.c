@@ -24,25 +24,14 @@ int usetup(void) {
 }
 
 int umain(void) {
-	//nav_init();
+	nav_init();
 
-	motor_set_vel(0, 128);
-	motor_set_vel(1, 128);
+	nav_set_velocity(frob_read_range(0, 245));
+	pause(2000);
 	while(true) {
-		printf("[%d, %d]\n", motor_get_current(0), motor_get_current(1));
-		pause(100);
+		nav_set_heading(within(-180, bot.heading+90, 180));
+		nav_set_velocity(frob_read_range(0, 245));
+		pause(2000);
 	}
-
-	float gyro_pos;
-	int encoder_val;
-	dbg_watch(&gyro_pos, FLOAT);
-	dbg_watch(&encoder_val, INT);
-
-	while(true) {
-		gyro_pos = gyro_get_degrees();
-		encoder_val = encoder_read(24);
-		//TODO high-level programming
-	}
-
     return 0;
 }

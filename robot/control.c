@@ -5,9 +5,9 @@
 #include "inc/control.h"
 #include "inc/util_math.h"
 
-#define CURRENT_BLOCKED	10	//indicator of obstruction
-#define CURRENT_MAX		15	//danger level for motors
-#define TICKS_PER_VPS	1	//conversion between encoders and VPS
+#define CURRENT_BLOCKED	15	//indicator of obstruction
+#define CURRENT_MAX		20	//danger level for motors
+#define TICKS_PER_VPS	1	//TODO conversion between encoders and VPS
 #define MAX_SPEED		245	//the fastest the robot will go (leave room for PID)
 
 /* nav settings */
@@ -27,7 +27,7 @@ void move_to(int x, int y) {
 
 		//move towards the target
 		nav_set_heading(angle_to_target(x, y));
-		nav_set_speed(frob_read_range(0, MAX_SPEED));
+		nav_set_velocity(frob_read_range(0, MAX_SPEED));
 
 		//correct course
 		while(vps_is_shit()) asm volatile("NOP;");
@@ -42,13 +42,13 @@ float pid_calc(pid_data* prefs, float current, float target) {
 	float error = within(-180, target - current, 180);
 
 	float integral = 0;
-	if(abs(error) > prefs.epsilon)
-		integral = integral + error*prefs.dt;
-	float derivative = (error - prefs.pre_error)/prefs.dt;
-	float output = prefs.Kp*error + prefs.Ki*integral + prefs.Kd*derivative;
+	if(abs(error) > prefs->epsilon)
+		integral = integral + error*prefs->dt;
+	float derivative = (error - prefs->pre_error)/prefs->dt;
+	float output = prefs->Kp*error + prefs->Ki*integral + prefs->Kd*derivative;
 
 	//Update error
-	prefs.pre_error = error;
+	prefs->pre_error = error;
 
 	return output;
 }
@@ -68,47 +68,45 @@ void nav_init(void) {
 	pid_linear.Ki		= 0.05;
 
 	//init the settings
-	nav_settings.speed = 0;
-	nav_settings.target = 128;
-	nav_settings.heading = 0;
-	nav_settings.slope = 5;
+	nav_settings.a = 0.5;
+	nav_settings.w = 5;
 
 	create_thread(&navigator, STACK_DEFAULT, 0, "nav_thread");
 }
 
 void nav_set_heading(float heading) {
-	nav_settings.heading = heading;
+	nav_settings.target_heading = heading;
 }
 
-void nav_set_speed(int speed) {
-	nav_settings.target = speed;
-	printf("speed changed\n");
+void nav_set_velocity(int v) {
+	nav_settings.target_velocity = v;
 }
 
-void tick_speed(void) {
-	if(nav_settings.speed<nav_settings.target-nav_settings.slope) {
-		nav_settings.speed += nav_settings.slope;
-	} else if(nav_settings.speed>nav_settings.target+nav_settings.slope) {
-		nav_settings.speed -= nav_settings.slope;
-	} else {
-		nav_settings.speed = nav_settings.target;
+void tick_motion(void) {
+	//forward acceleration
+	if(nav_settings.velocity<nav_settings.target_velocity) {
+		nav_settings.velocity += nav_settings.a;
+	} else if(nav_settings.velocity>nav_settings.target_velocity) {
+		nav_settings.velocity -= nav_settings.a;
 	}
 
-	float heading = gyro_absolute();
-	float output = pid_calc(pid_linear, heading, nav_settings.heading);
+	float output = pid_calc(&pid_linear, bot.heading, nav_settings.target_heading);
 
-	if(abs(bound(-180, heading-nav_settings.heading, 180))<60) {
-		motor_set_vel(MOTOR_LEFT, nav_settings.speed + output);
-		motor_set_vel(MOTOR_RIGHT, nav_settings.speed - output);
-	} else {
+	if(output<-20) output = -20;
+	if(output>20) output = 20;
+
+	//if(abs(bound(-180, bot.heading-nav_settings.heading, 180))<45) {
+		motor_set_vel(MOTOR_LEFT, bound(0, nav_settings.velocity + output, 255));
+		motor_set_vel(MOTOR_RIGHT, bound(0, nav_settings.velocity - output, 255));
+	/*} else {
 		motor_set_vel(MOTOR_LEFT, output);
 		motor_set_vel(MOTOR_RIGHT, -output);
-	}
+	}*/
 }
 
 void tick_state(void) {
 	//heading
-	bot.heading = gyro_absolute();
+	bot.heading = gyro_get_degrees();
 
 	//position
 	if(vps_is_shit()) {
@@ -123,20 +121,25 @@ void tick_state(void) {
 	}
 
 	//obstruction
-	bool obstructed = false;
+	//printf("[%d, %d]", motor_get_current(0), motor_get_current(1));
+
+	/*bool obstructed = false;
 	for(unsigned char i=0; i<4; i++) {
 		if(motor_get_current(i)>CURRENT_BLOCKED) obstructed = true;
 		//shut off burning motors
 		if(motor_get_current(i)>CURRENT_MAX) motor_set_vel(i, 0);
 	}
 
-	bot.obstructed = obstructed;
+	bot.obstructed = obstructed;*/
 }
 
 int navigator(void) {
+	printf("=navigator started=\n"
+			"|vel\t|angle\t|t vel\t|t angle|\n");
 	for(;;) {
-		tick_speed();
 		tick_state();
+		tick_motion();
+
 
 		yield();
 	}

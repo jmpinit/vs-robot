@@ -12,11 +12,14 @@
 
 /* nav controller data */
 typedef struct {
-	float speed;
-	int target;
-	float heading;
+	float velocity;			//current velocity
+	float heading;			//current absolute heading
 
-	float slope;
+	int target_velocity;	//velocity to approach
+	float target_heading;	//heading to approach
+
+	float a;				//linear acceleration
+	float w;				//radial acceleration
 } nav_data;
 
 /* PID controller data */
@@ -45,16 +48,16 @@ extern robot bot;
 */
 
 int navigator(void);	//main thread
-void tick_speed(void);	//smooth control of motors
+void tick_motion(void);	//smooth control of motors
 void tick_state(void);	//combines info to guess where robot is
 
-void nav_set_speed(int speed);
+void nav_set_velocity(int v);
 void nav_set_heading(float heading);
 void nav_init(void);
 
 float convert_encoder(int ticks);
 
 void move_to(int x, int y);
-float pid_calc(pid_data prefs, float current, float target);
+float pid_calc(pid_data* prefs, float current, float target);
 
 #endif

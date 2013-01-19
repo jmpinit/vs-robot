@@ -11,7 +11,7 @@ enum {
 	MINE		//per ping pong ball mined
 }
 
-unsigned char points[4];	//TODO make these the right values
+unsigned char points[4];
 points[CAPTURE] = 100;
 points[DUMP]	= 40;
 points[EXPLORE]	= 30;
