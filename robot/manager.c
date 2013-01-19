@@ -13,6 +13,6 @@ enum {
 
 unsigned char points[4];	//TODO make these the right values
 points[CAPTURE] = 100;
-points[DUMP]	= 60;
-points[EXPLORE]	= 200;
-points[MINE]	= 40
+points[DUMP]	= 40;
+points[EXPLORE]	= 30;
+points[MINE]	= 40;
