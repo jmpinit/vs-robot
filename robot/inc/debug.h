@@ -2,6 +2,7 @@
 #define _DEBUG_
 
 #define ARRAY_SIZE(foo) (sizeof(foo)/sizeof(foo[0]))
+#define NOTHING asm volatile ("NOP")
 
 #define NUM_WATCHED	16	//number of variables that can be watched at one time
 

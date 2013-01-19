@@ -51,7 +51,11 @@ void nav_set_velocity(int v);
 void nav_set_heading(float heading);
 void nav_init(void);
 
-float convert_encoder(int ticks);
+void nav_straight(int distance);
+void nav_turn_to(float heading);
+
+float encoder_read_avg(void);		//read the average of the two encoders
+float encoder_convert(int ticks);	//calculate the distance in VPS coords from encoder ticks
 
 void move_to(int x, int y);
 float pid_calc(pid_data* prefs, float current, float target);
