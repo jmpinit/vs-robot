@@ -96,8 +96,8 @@ void tick_motion(void) {
 	if(output>20) output = 20;
 
 	//if(abs(bound(-180, bot.heading-nav_settings.heading, 180))<45) {
-		motor_set_vel(MOTOR_LEFT, bound(0, nav_settings.velocity + output, 255));
-		motor_set_vel(MOTOR_RIGHT, bound(0, nav_settings.velocity - output, 255));
+		motor_set_vel(MOTOR_LEFT, bound(-255, nav_settings.velocity - output, 255));
+		motor_set_vel(MOTOR_RIGHT, bound(-255, nav_settings.velocity + output, 255));
 	/*} else {
 		motor_set_vel(MOTOR_LEFT, output);
 		motor_set_vel(MOTOR_RIGHT, -output);
