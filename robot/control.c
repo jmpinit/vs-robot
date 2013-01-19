@@ -12,7 +12,6 @@
 
 /* nav settings */
 static pid_data pid_linear;
-static nav_data nav_settings;
 
 float angle_to_target(int x, int y) {
 	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
@@ -90,10 +89,11 @@ void tick_motion(void) {
 		nav_settings.velocity -= nav_settings.a;
 	}
 
-	float output = pid_calc(&pid_linear, bot.heading, nav_settings.target_heading);
+	float output = pid_calc(&pid_linear, nav_settings.heading, nav_settings.target_heading);
 
-	if(output<-20) output = -20;
-	if(output>20) output = 20;
+	#define MAX_TURN	96
+	if(output<-MAX_TURN) output = -MAX_TURN;
+	if(output>MAX_TURN) output = MAX_TURN;
 
 	//if(abs(bound(-180, bot.heading-nav_settings.heading, 180))<45) {
 		motor_set_vel(MOTOR_LEFT, bound(-255, nav_settings.velocity - output, 255));
@@ -106,7 +106,7 @@ void tick_motion(void) {
 
 void tick_state(void) {
 	//heading
-	bot.heading = gyro_get_degrees();
+	nav_settings.heading = gyro_get_degrees();
 
 	//position
 	if(vps_is_shit()) {
@@ -134,12 +134,11 @@ void tick_state(void) {
 }
 
 int navigator(void) {
-	printf("=navigator started=\n"
-			"|vel\t|angle\t|t vel\t|t angle|\n");
 	for(;;) {
 		tick_state();
 		tick_motion();
 
+		//printf("[%f, %f]\n", nav_settings.target_heading, nav_settings.heading);
 
 		yield();
 	}

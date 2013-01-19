@@ -26,12 +26,20 @@ int usetup(void) {
 int umain(void) {
 	nav_init();
 
-	nav_set_velocity(frob_read_range(0, 245));
-	pause(2000);
 	while(true) {
-		nav_set_heading(within(-180, bot.heading+90, 180));
-		nav_set_velocity(frob_read_range(0, 245));
-		pause(2000);
+		//drive in a square
+		nav_set_heading(0);
+		nav_set_velocity(128);
+		pause(4000);
+		nav_set_heading(90);
+		nav_set_velocity(128);
+		pause(4000);
+		nav_set_heading(178);
+		nav_set_velocity(128);
+		pause(4000);
+		nav_set_heading(-90);
+		nav_set_velocity(128);
+		pause(4000);
 	}
     return 0;
 }

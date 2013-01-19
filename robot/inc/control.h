@@ -22,6 +22,8 @@ typedef struct {
 	float w;				//radial acceleration
 } nav_data;
 
+static nav_data nav_settings;
+
 /* PID controller data */
 typedef struct {
 	float epsilon;
