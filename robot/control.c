@@ -38,8 +38,8 @@ void move_to(int x, int y) {
 	}
 }
 
-float pid_calc(pid_data prefs, float current, float target) {
-	float error = bound(-180, target - current, 180);
+float pid_calc(pid_data* prefs, float current, float target) {
+	float error = within(-180, target - current, 180);
 
 	float integral = 0;
 	if(abs(error) > prefs.epsilon)

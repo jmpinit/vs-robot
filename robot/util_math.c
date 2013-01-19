@@ -8,8 +8,8 @@ int within(int min, int val, int max) {
 }
 
 float bound(float min, float val, float max) {
-	while(val<min) val += (max-min);
-	while(val>max) val -= (max-min);
+	if(val<min) val = min;
+	if(val>max) val = max;
 	return val;
 }
 

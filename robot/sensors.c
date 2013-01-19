@@ -5,11 +5,11 @@
 static float gyro_transform = 0;
 
 void gyro_zero(void) {
-	gyro_transform = bound(-180, gyro_get_degrees() - vps_get_degrees(), 180);
+	gyro_transform = within(-180, gyro_get_degrees() - vps_get_degrees(), 180);
 }
 
 float gyro_absolute(void) {
-	return bound(-180, gyro_get_degrees() - gyro_transform, 180);
+	return within(-180, gyro_get_degrees() - gyro_transform, 180);
 }
 
 float vps_get_degrees(void) {
