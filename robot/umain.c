@@ -24,6 +24,13 @@ int usetup(void) {
 }
 
 int umain(void) {
+	//nav point teller
+	while(true) {
+		while(!SWITCH_GO()) { NOTHING; }
+		vps_update();
+		bprintf("(%d, %d)\n", vps_x, vps_y);
+	}
+
 	nav_init();
 
 	nav_turn_to(0);

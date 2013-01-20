@@ -11,6 +11,11 @@
 #define TICKS_PER_VPS	1	//TODO conversion between encoders and VPS
 #define MAX_SPEED		245	//the fastest the robot will go (leave room for PID)
 
+#define GATE_OPEN	90
+#define GATE_CLOSED	5
+#define LEVER_UP	90
+#define LEVER_DOWN	5
+
 static pid_data pid_linear;
 
 float angle_to_target(int x, int y) {
@@ -156,6 +161,22 @@ int navigator(void) {
 	}
 
 	return 0;
+}
+
+void gate_open(void) {
+	servo_set_pos(SERVO_GATE, GATE_OPEN);
+}
+
+void gate_close(void) {
+	servo_set_pos(SERVO_GATE, GATE_CLOSED);
+}
+
+void lever_up(void) {
+	servo_set_pos(SERVO_LEVER, LEVER_UP);
+}
+
+void lever_down(void) {
+	servo_set_pos(SERVO_LEVER, LEVER_DOWN);
 }
 
 float encoder_read_avg(void) {

@@ -6,6 +6,9 @@
 #define MOTOR_LEFT		0
 #define MOTOR_RIGHT		1
 
+#define SERVO_GATE		0
+#define SERVO_LEVER		1
+
 #define ENCODER_LEFT	24
 #define ENCODER_RIGHT	25
 #define ENCODER_CENTER	27
@@ -36,6 +39,15 @@ typedef struct {
 } robot;
 
 extern robot bot; 
+
+/*
+   MISC ACTUATION
+*/
+
+void gate_open(void);
+void gate_close(void);
+void lever_up(void);
+void lever_down(void);
 
 /*
    NAVIGATION SYSTEM
