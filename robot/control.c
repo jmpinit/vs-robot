@@ -11,7 +11,7 @@
 #define TICKS_PER_VPS	1	//TODO conversion between encoders and VPS
 #define MAX_SPEED		245	//the fastest the robot will go (leave room for PID)
 
-#define GATE_OPEN		90
+#define GATE_OPEN		110
 #define GATE_CLOSED		5
 #define LEVER_UP		90
 #define LEVER_MIDDLE	45
