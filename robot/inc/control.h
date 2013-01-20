@@ -47,6 +47,7 @@ extern robot bot;
 void gate_open(void);
 void gate_close(void);
 void lever_up(void);
+void lever_middle(void);
 void lever_down(void);
 
 /*

@@ -24,37 +24,7 @@ int usetup(void) {
 }
 
 int umain(void) {
-	//nav point teller
-	while(true) {
-		while(!SWITCH_GO()) { NOTHING; }
-		vps_update();
-		bprintf("(%d, %d)\n", vps_x, vps_y);
-	}
+	#include "calibration/servo_pos.c"
 
-	nav_init();
-
-	nav_turn_to(0);
-	while(true) {
-		nav_straight(64, 128);
-		nav_turn_to(90);
-		nav_straight(64, 128);
-		nav_turn_to(179);
-		nav_straight(64, 128);
-		nav_turn_to(-90);
-		nav_straight(64, 128);
-		nav_turn_to(0);
-	}
-
-	while(true) {
-		//drive in a square
-		nav_set_heading(0);
-		pause(4000);
-		nav_set_heading(90);
-		pause(4000);
-		nav_set_heading(178);
-		pause(4000);
-		nav_set_heading(-90);
-		pause(4000);
-	}
     return 0;
 }

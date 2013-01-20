@@ -11,10 +11,11 @@
 #define TICKS_PER_VPS	1	//TODO conversion between encoders and VPS
 #define MAX_SPEED		245	//the fastest the robot will go (leave room for PID)
 
-#define GATE_OPEN	90
-#define GATE_CLOSED	5
-#define LEVER_UP	90
-#define LEVER_DOWN	5
+#define GATE_OPEN		90
+#define GATE_CLOSED		5
+#define LEVER_UP		90
+#define LEVER_MIDDLE	45
+#define LEVER_DOWN		5
 
 static pid_data pid_linear;
 
@@ -173,6 +174,10 @@ void gate_close(void) {
 
 void lever_up(void) {
 	servo_set_pos(SERVO_LEVER, LEVER_UP);
+}
+
+void lever_middle(void) {
+	servo_set_pos(SERVO_LEVER, LEVER_MIDDLE);
 }
 
 void lever_down(void) {
