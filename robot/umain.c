@@ -26,7 +26,18 @@ int usetup(void) {
 int umain(void) {
 	nav_init();
 
-	nav_set_velocity(128);
+	nav_turn_to(0);
+	while(true) {
+		nav_straight(64, 128);
+		nav_turn_to(90);
+		nav_straight(64, 128);
+		nav_turn_to(179);
+		nav_straight(64, 128);
+		nav_turn_to(-90);
+		nav_straight(64, 128);
+		nav_turn_to(0);
+	}
+
 	while(true) {
 		//drive in a square
 		nav_set_heading(0);
