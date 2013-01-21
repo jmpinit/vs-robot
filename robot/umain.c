@@ -24,7 +24,21 @@ int usetup(void) {
 }
 
 int umain(void) {
-	#include "calibration/servo_pos.c"
+	nav_init();
+
+	move_to_ptp(620, -1048);
+	pause(1000);
+	move_to_ptp(1200, 10);
+	pause(1000);
+	move_to_ptp(620, 1048);
+	pause(1000);
+	move_to_ptp(-590, 1048);
+	pause(1000);
+	move_to_ptp(-1200, 10);
+	pause(1000);
+	move_to_ptp(-590, -1048);
+	pause(1000);
+	while(true) { NOTHING; }
 
     return 0;
 }

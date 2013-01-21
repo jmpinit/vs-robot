@@ -6,16 +6,16 @@
 #include "inc/control.h"
 #include "inc/util_math.h"
 
-#define CURRENT_BLOCKED	15	//indicator of obstruction
-#define CURRENT_MAX		20	//danger level for motors
-#define TICKS_PER_VPS	1	//TODO conversion between encoders and VPS
-#define MAX_SPEED		245	//the fastest the robot will go (leave room for PID)
+#define CURRENT_BLOCKED	15		//indicator of obstruction
+#define CURRENT_MAX		20		//danger level for motors
+#define TICKS_PER_VPS	.07		//conversion between encoders and VPS
+#define MAX_SPEED		245		//the fastest the robot will go (leave room for PID)
 
-#define GATE_OPEN		110
-#define GATE_CLOSED		5
-#define LEVER_UP		90
-#define LEVER_MIDDLE	45
-#define LEVER_DOWN		5
+#define GATE_OPEN		330
+#define GATE_CLOSED		80
+#define LEVER_UP		235
+#define LEVER_MIDDLE	177
+#define LEVER_DOWN		112
 
 static pid_data pid_linear;
 
@@ -23,12 +23,24 @@ float angle_to_target(int x, int y) {
 	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
 }
 
+void move_to_ptp(int x, int y) {
+	while(vps_is_shit()) { vps_update(); }
+	gyro_zero();
+
+	float dist = vps_to_encoder(distance(vps_x, vps_y, x, y));
+	nav_turn_to(angle_to_target(x, y));
+	nav_straight(dist, 96);
+	nav_set_velocity(0);
+
+	printf("(%d, %d)", vps_x, vps_y);
+}
+
 void move_to(int x, int y) {
     while(true) {
 		vps_update();
 
 		//are we there yet?
-		if(distance(bot.x, bot.y, x, y)) break;
+		if(distance(bot.x, bot.y, x, y)<512) break;
 
 		//move towards the target
 		nav_set_heading(angle_to_target(x, y));
@@ -46,11 +58,10 @@ void move_to(int x, int y) {
 float pid_calc(pid_data* prefs, float current, float target) {
 	float error = within(-180, target - current, 180);
 
-	float integral = 0;
 	if(abs(error) > prefs->epsilon)
-		integral = integral + error*prefs->dt;
+		prefs->integral = prefs->integral + error*prefs->dt;
 	float derivative = (error - prefs->pre_error)/prefs->dt;
-	float output = prefs->Kp*error + prefs->Ki*integral + prefs->Kd*derivative;
+	float output = prefs->Kp*error + prefs->Ki*prefs->integral + prefs->Kd*derivative;
 
 	//Update error
 	prefs->pre_error = error;
@@ -66,14 +77,15 @@ robot bot;
 
 void nav_init(void) {
 	//init pid settings
-	pid_linear.epsilon	= 0.1;
+	pid_linear.epsilon	= 0.01;
 	pid_linear.dt		= 0.1;
 	pid_linear.Kp		= 3.0;
 	pid_linear.Kd		= 0.1;
-	pid_linear.Ki		= 0.05;
+	//pid_linear.Ki		= 0.05;
+	pid_linear.Ki		= 0.01;
 
 	//init the settings
-	bot.a = 0.5;
+	bot.a = 2;
 	bot.w = 5;
 
 	create_thread(&navigator, STACK_DEFAULT, 0, "nav_thread");
@@ -100,7 +112,7 @@ void nav_turn_to(float heading) {
 	nav_set_velocity(0);
 	while(abs(bot.velocity)>bot.a) { NOTHING; yield(); }	//wait until stopped
 	nav_set_heading(heading);
-	while(abs(within(-180, bot.heading-heading, 180))>15) { NOTHING; }	//wait until we face that direction
+	while(abs(within(-180, bot.heading-heading, 180))>4) { NOTHING; }	//wait until we face that direction
 }
 
 void tick_motion(void) {
@@ -126,10 +138,10 @@ void tick_motion(void) {
 
 void tick_state(void) {
 	//heading
-	bot.heading = gyro_get_degrees();
+	bot.heading = gyro_absolute();
 
 	//position
-	if(vps_is_shit()) {
+	/*if(vps_is_shit()) {
 		int ticks = encoder_read_avg();
 		float d = encoder_convert(ticks);
 
@@ -138,7 +150,7 @@ void tick_state(void) {
 	} else {
 		bot.x = vps_x;
 		bot.y = vps_y;
-	}
+	}*/
 
 	//obstruction
 	//printf("[%d, %d]", motor_get_current(0), motor_get_current(1));
@@ -188,6 +200,6 @@ float encoder_read_avg(void) {
 	return (encoder_read(ENCODER_LEFT)+encoder_read(ENCODER_RIGHT))/2.0;
 }
 
-float encoder_convert(int ticks) {
-	return ticks/TICKS_PER_VPS;
+float vps_to_encoder(float dist) {
+	return dist*TICKS_PER_VPS;
 }

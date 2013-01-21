@@ -19,6 +19,7 @@ typedef struct {
 	float dt;
 	float Kp, Kd, Ki;
 
+	float integral;
 	float pre_error;
 } pid_data;
 
@@ -68,8 +69,9 @@ void nav_straight(int distance, int v);
 void nav_turn_to(float heading);
 
 float encoder_read_avg(void);		//read the average of the two encoders
-float encoder_convert(int ticks);	//calculate the distance in VPS coords from encoder ticks
+float vps_to_encoder(float vps);	//calculate the distance in VPS coords from encoder ticks
 
+void move_to_ptp(int x, int y);
 void move_to(int x, int y);
 float pid_calc(pid_data* prefs, float current, float target);
 
