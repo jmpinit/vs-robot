@@ -24,15 +24,14 @@ float angle_to_target(int x, int y) {
 }
 
 void move_to_ptp(int x, int y) {
+	vps_update();
 	while(vps_is_shit()) { vps_update(); }
 	gyro_zero();
 
 	float dist = vps_to_encoder(distance(vps_x, vps_y, x, y));
 	nav_turn_to(angle_to_target(x, y));
-	nav_straight(dist, 96);
+	nav_straight(dist, 235);
 	nav_set_velocity(0);
-
-	printf("(%d, %d)", vps_x, vps_y);
 }
 
 void move_to(int x, int y) {
@@ -82,7 +81,7 @@ void nav_init(void) {
 	pid_linear.Kp		= 3.0;
 	pid_linear.Kd		= 0.1;
 	//pid_linear.Ki		= 0.05;
-	pid_linear.Ki		= 0.01;
+	pid_linear.Ki		= 0.012;
 
 	//init the settings
 	bot.a = 2;

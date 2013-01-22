@@ -1,7 +1,17 @@
 #include <joyos.h>
 #include "inc/manager.h"
+#include "inc/util_math.h"
 
 bool team;
+
+pt map[] = {
+	{ -1200, 10 },
+	{ -590, -1048 },
+	{ 620, -1048 },
+	{ 1200, 10 },
+	{ 620, 1048 },
+	{ -590, 1048}
+};
 
 /* scoring information */
 enum {
