@@ -18,6 +18,21 @@ float vps_get_degrees(void) {
 	return val;
 }
 
+unsigned char vps_get_owner(unsigned char id) {
+	if(id<6) return game.territories[id].owner;
+	return 0;
+}
+
+unsigned char vps_get_balls(unsigned char id) {
+	if(id<6) return game.territories[id].remaining;
+	return 0;
+}
+
+unsigned char vps_get_rate(unsigned char id) {
+	if(id<6) return game.territories[id].rate_limit;
+	return 0;
+}
+
 bool vps_is_shit(void) {
 	return vps_x==0 && vps_y==0 && vps_heading==0;
 }
