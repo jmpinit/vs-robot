@@ -10,11 +10,11 @@
 #define CURRENT_MAX		20		//danger level for motors
 #define MAX_SPEED		245		//the fastest the robot will go (leave room for PID)
 
-#define GATE_OPEN		330
-#define GATE_CLOSED		80
-#define LEVER_UP		235
-#define LEVER_MIDDLE	177
-#define LEVER_DOWN		112
+#define GATE_OPEN		100
+#define GATE_CLOSED		275
+#define LEVER_UP		440
+#define LEVER_MIDDLE	245
+#define LEVER_DOWN		170
 
 static pid_data pid_linear;
 

@@ -24,6 +24,8 @@ int usetup(void) {
 }
 
 int umain(void) {
+	#include "calibration/servo_pos.c"
+
 	pause(3000);
 
 	nav_init();
