@@ -35,7 +35,8 @@ typedef struct {
 	int target_velocity;	//velocity to approach
 	float target_heading;	//heading to approach
 
-	float a;				//linear acceleration
+	float accel;			//linear acceleration
+	float deccel;			//linear decceleration
 	float w;				//radial acceleration
 } robot;
 

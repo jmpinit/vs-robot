@@ -84,7 +84,8 @@ void nav_init(void) {
 	pid_linear.Ki		= 0.012;
 
 	//init the settings
-	bot.a = 2;
+	bot.accel = 2;
+	bot.deccel = 1;
 	bot.w = 5;
 
 	create_thread(&navigator, STACK_DEFAULT, 0, "nav_thread");
@@ -109,7 +110,7 @@ void nav_straight(int distance, int v) {
 
 void nav_turn_to(float heading) {
 	nav_set_velocity(0);
-	while(abs(bot.velocity)>bot.a) { NOTHING; yield(); }	//wait until stopped
+	while(abs(bot.velocity)>bot.accel) { NOTHING; yield(); }	//wait until stopped
 	nav_set_heading(heading);
 	while(abs(within(-180, bot.heading-heading, 180))>4) { NOTHING; }	//wait until we face that direction
 }
@@ -117,12 +118,12 @@ void nav_turn_to(float heading) {
 void tick_motion(void) {
 	//forward acceleration
 	if(bot.velocity<bot.target_velocity) {
-		bot.velocity += bot.a;
+		bot.velocity += bot.accel;
 	} else if(bot.velocity>bot.target_velocity) {
-		bot.velocity -= bot.a;
+		bot.velocity -= bot.deccel;
 	}
-	if((bot.velocity>=bot.target_velocity-bot.a)
-		   	&& (bot.velocity<=bot.target_velocity+bot.a))
+	if((bot.velocity>=bot.target_velocity-max(bot.accel, bot.deccel))
+		   	&& (bot.velocity<=bot.target_velocity+max(bot.accel, bot.deccel)))
 		bot.velocity = bot.target_velocity;
 
 	float output = pid_calc(&pid_linear, bot.heading, bot.target_heading);

@@ -9,5 +9,6 @@ typedef struct {
 float distance(int x1, int y1, int x2, int y2);
 float within(float min, float val, float max);
 float bound(float min, float val, float max);
+float max(float a, float b);
 
 #endif
