@@ -8,7 +8,6 @@
 
 #define CURRENT_BLOCKED	15		//indicator of obstruction
 #define CURRENT_MAX		20		//danger level for motors
-#define TICKS_PER_VPS	.07		//conversion between encoders and VPS
 #define MAX_SPEED		245		//the fastest the robot will go (leave room for PID)
 
 #define GATE_OPEN		330
@@ -32,26 +31,19 @@ void move_to_ptp(int x, int y) {
 	nav_turn_to(angle_to_target(x, y));
 	nav_straight(dist, 235);
 	nav_set_velocity(0);
+	bot.velocity = 0;
+	motor_brake(MOTOR_LEFT);
+	motor_brake(MOTOR_RIGHT);
 }
 
 void move_to(int x, int y) {
-    while(true) {
-		vps_update();
+	vps_update();
+	while(vps_is_shit()) { vps_update(); }
+	gyro_zero();
 
-		//are we there yet?
-		if(distance(bot.x, bot.y, x, y)<512) break;
-
-		//move towards the target
-		nav_set_heading(angle_to_target(x, y));
-		nav_set_velocity(frob_read_range(0, MAX_SPEED));
-
-		//correct course
-		while(vps_is_shit()) asm volatile("NOP;");
-		gyro_zero();
-		nav_set_heading(angle_to_target(x, y));
-
-		yield();
-	}
+	float dist = vps_to_encoder(distance(vps_x, vps_y, x, y));
+	nav_straight(dist, 96);
+	bot.target_heading = angle_to_target(x, y);
 }
 
 float pid_calc(pid_data* prefs, float current, float target) {
@@ -142,8 +134,8 @@ void tick_state(void) {
 
 	//position
 	/*if(vps_is_shit()) {
-		int ticks = encoder_read_avg();
-		float d = encoder_convert(ticks);
+		int ticks = vps_to_encoder(ti);
+		float d = (ticks);
 
 		bot.x += d*cos(bot.heading);
 		bot.y += d*sin(bot.heading);
@@ -196,10 +188,3 @@ void lever_down(void) {
 	servo_set_pos(SERVO_LEVER, LEVER_DOWN);
 }
 
-float encoder_read_avg(void) {
-	return (encoder_read(ENCODER_LEFT)+encoder_read(ENCODER_RIGHT))/2.0;
-}
-
-float vps_to_encoder(float dist) {
-	return dist*TICKS_PER_VPS;
-}

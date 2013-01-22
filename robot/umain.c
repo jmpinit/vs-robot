@@ -28,18 +28,12 @@ int umain(void) {
 
 	nav_init();
 
-	move_to_ptp(620, 1048);
-	pause(1000);
-	move_to_ptp(-590, 1048);
-	pause(1000);
-	move_to_ptp(-1200, 10);
-	pause(1000);
-	move_to_ptp(-590, -1048);
-	pause(1000);
-	move_to_ptp(620, -1048);
-	pause(1000);
-	move_to_ptp(1200, 10);
-	pause(1000);
+	move_to(620, 1048);
+	move_to(-590, 1048);
+	move_to(-1200, 10);
+	move_to(-590, -1048);
+	move_to(620, -1048);
+	move_to(1200, 10);
 	while(true) { NOTHING; }
 
     return 0;

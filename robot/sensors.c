@@ -21,3 +21,11 @@ float vps_get_degrees(void) {
 bool vps_is_shit(void) {
 	return vps_x==0 && vps_y==0 && vps_heading==0;
 }
+
+float encoder_read_avg(void) {
+	return (encoder_read(ENCODER_LEFT)+encoder_read(ENCODER_RIGHT))/2.0;
+}
+
+float vps_to_encoder(float dist) {
+	return dist*TICKS_PER_VPS;
+}

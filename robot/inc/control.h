@@ -9,10 +9,6 @@
 #define SERVO_GATE		0
 #define SERVO_LEVER		1
 
-#define ENCODER_LEFT	24
-#define ENCODER_RIGHT	25
-#define ENCODER_CENTER	27
-
 /* PID controller data */
 typedef struct {
 	float epsilon;
@@ -68,9 +64,6 @@ void nav_init(void);
 
 void nav_straight(int distance, int v);
 void nav_turn_to(float heading);
-
-float encoder_read_avg(void);		//read the average of the two encoders
-float vps_to_encoder(float vps);	//calculate the distance in VPS coords from encoder ticks
 
 void move_to_ptp(int x, int y);
 void move_to(int x, int y);
