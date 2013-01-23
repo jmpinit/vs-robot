@@ -9,6 +9,10 @@
 #define ENCODER_RIGHT	25
 #define ENCODER_CENTER	27
 
+#define SHARP_LEFT		10
+#define SHARP_RIGHT		12
+#define SHARP_BACK		14
+
 /* VPS INFO */
 #define vps_update()	copy_objects()
 
