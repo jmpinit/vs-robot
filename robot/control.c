@@ -104,9 +104,8 @@ void nav_straight(int distance, int v) {
 	nav_set_heading(bot.heading);	//drive in direction we are facing
 
 	nav_set_velocity(v);
-	encoder_reset(ENCODER_LEFT);
-	encoder_reset(ENCODER_RIGHT);
-	while(encoder_read_avg()<distance) { NOTHING; yield(); }	//drive for that length
+	int ticks_start = encoder_read_avg();
+	while(encoder_read_avg()-ticks_start<distance) { NOTHING; yield(); }	//drive for that length
 }
 
 void nav_turn_to(float heading) {
@@ -137,38 +136,8 @@ void tick_motion(void) {
 	motor_set_vel(MOTOR_RIGHT, bound(-255, bot.velocity + output, 255));
 }
 
-void tick_state(void) {
-	//heading
-	bot.heading = gyro_absolute();
-
-	//position
-	/*if(vps_is_shit()) {
-		int ticks = vps_to_encoder(ti);
-		float d = (ticks);
-
-		bot.x += d*cos(bot.heading);
-		bot.y += d*sin(bot.heading);
-	} else {
-		bot.x = vps_x;
-		bot.y = vps_y;
-	}*/
-
-	//obstruction
-	//printf("[%d, %d]", motor_get_current(0), motor_get_current(1));
-
-	/*bool obstructed = false;
-	for(unsigned char i=0; i<4; i++) {
-		if(motor_get_current(i)>CURRENT_BLOCKED) obstructed = true;
-		//shut off burning motors
-		if(motor_get_current(i)>CURRENT_MAX) motor_set_vel(i, 0);
-	}
-
-	bot.obstructed = obstructed;*/
-}
-
 int navigator(void) {
 	for(;;) {
-		tick_state();
 		tick_motion();
 
 		yield();

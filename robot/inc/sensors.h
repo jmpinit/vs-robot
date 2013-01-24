@@ -41,6 +41,7 @@ unsigned char vps_get_territory(void);			//what territory are we in?
 bool vps_is_shit(void);							//whether the latest VPS values are valid
 
 float encoder_read_avg(void);		//read the average of the two encoders
-float vps_to_encoder(float vps);	//calculate the distance in VPS coords from encoder ticks
+float vps_to_encoder(float vps);	//calculate the distance in encoder ticks from VPS coords
+float encoder_to_vps(int ticks);	//calculate the distance in VPS coords from encoder ticks
 
 #endif

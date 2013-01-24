@@ -59,7 +59,6 @@ void lever_down(void);
 
 int navigator(void);	//main thread
 void tick_motion(void);	//smooth control of motors
-void tick_state(void);	//combines info to guess where robot is
 
 void nav_set_velocity(int v);
 void nav_set_heading(float heading);

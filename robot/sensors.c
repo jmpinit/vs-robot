@@ -16,8 +16,43 @@ float sharp_left[HIST_SHARP];
 float sharp_right[HIST_SHARP];
 float sharp_back[HIST_SHARP];
 
+int last_encoder;
+
 int sensor(void) {
+	last_encoder = 0;
+
 	while(true) {
+		/* VPS */
+		vps_update();
+
+		/* ORIENTATION */
+		bot.heading = gyro_absolute();
+
+		/* POSITION */
+		if(vps_is_shit()) {
+			int ticks = encoder_read_avg()-last_encoder;
+			float d = encoder_to_vps(ticks);				//how far have we gone since last?
+
+			bot.x += d*cos(bot.heading);
+			bot.y += d*sin(bot.heading);
+		} else {
+			bot.x = vps_x;
+			bot.y = vps_y;
+		}
+
+		//obstruction
+		//printf("[%d, %d]", motor_get_current(0), motor_get_current(1));
+
+		/*bool obstructed = false;
+		  for(unsigned char i=0; i<4; i++) {
+		  if(motor_get_current(i)>CURRENT_BLOCKED) obstructed = true;
+		//shut off burning motors
+		if(motor_get_current(i)>CURRENT_MAX) motor_set_vel(i, 0);
+		}
+
+		bot.obstructed = obstructed;*/
+
+		/* SHARP DISTANCE SENSORS */
 		//move back histories
 		for(int i=HIST_SHARP-1; i>0; i--)
 			sharp_left[i] = sharp_left[i-1];
@@ -46,6 +81,9 @@ int sensor(void) {
 		for(int i=0; i<HIST_SHARP; i++)
 			total += sharp_back[i];
 		senses.sharp[2] = total/((float)HIST_SHARP);
+
+		/* POSITION */
+
 
 		yield();
 	}
@@ -116,6 +154,10 @@ float encoder_read_avg(void) {
 
 float vps_to_encoder(float dist) {
 	return dist*TICKS_PER_VPS;
+}
+
+float encoder_to_vps(int ticks) {
+	return ticks/TICKS_PER_VPS;
 }
 
 unsigned char vps_get_territory(void) {
