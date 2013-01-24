@@ -6,6 +6,8 @@
 
 #include "util_math.h"
 
+extern unsigned char team;
+
 typedef struct {
 	pt center;
 	pt mine;
@@ -13,8 +15,6 @@ typedef struct {
 	float heading_mine;
 	float heading_capture;
 } territory;
-
-extern unsigned char team;
 
 /*enum Activity {
 	CAPTURE,

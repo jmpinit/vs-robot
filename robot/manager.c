@@ -1,10 +1,10 @@
 #include <joyos.h>
+#include <math.h>
 #include "inc/manager.h"
 #include "inc/sensors.h"
 #include "inc/control.h"
 #include "inc/util_math.h"
-
-unsigned char team;
+#include "inc/debug.h"
 
 territory map[6] = {
 	//center		mine			capture			mine angle	capture angle
@@ -33,46 +33,38 @@ void manager_init(void) {
 	points[MINE]	= 40;
 }
 
+void visit_one(void) {
+	unsigned char id = vps_get_territory();
+	territory this = map[id];
+	move_to_ptp(this.center.x, this.center.y, 96);
+	while(vps_is_shit()) { vps_update(); yield(); }
+	nav_turn_to(this.heading_capture);
+}
+
 void manager_explore(void) {
+	bprintf("exploring\n");
 	for(unsigned char id=0; id<6; id++) {
 		move_to_ptp(map[(id+2)%6].center.x, map[(id+2)%6].center.y, 245);
 	}
-
-	move_to_ptp(map[0].center.x, map[0].center.y, 245);
 }
 
 void manager_visit(void) {
 	for(unsigned char id=0; id<6; id++) {
 		territory this = map[(id+2)%6];
+		bprintf("visiting %d\n", (id+2)%6);
 		move_to_ptp(this.center.x, this.center.y, 96);
+		bprintf("at waypoint\n");
 
-		vps_update();
+		while(vps_is_shit()) { vps_update(); yield(); }
 		//nav_turn_to(angle_to_target(this.capture.x, this.capture.y)+180);
-		nav_turn_to(this.heading_capture);
+		nav_turn_to(this.heading_mine);
 		//float dist = vps_to_encoder(distance(vps_x, vps_y, this.capture.x, this.capture.y));
-		nav_straight(44, -96);
+		bprintf("approaching gears\n");
+		nav_straight_stop(10, 96);
 
-		for(unsigned int i=0; i<200; i++) {
-			motor_set_vel(MOTOR_CAPTURE, i);
-			pause(1);
-		}
-
-		for(unsigned int i=200; i>=0; i--) {
-			motor_set_vel(MOTOR_CAPTURE, i);
-			pause(1);
-		}
-
-		gate_open();
 		pause(1000);
-		gate_close();
 
-		nav_straight(44, 96);
-
-		/*move_to_ptp(map[id].mine.x, map[id].mine.y);
-		pause(3000);
-		move_to_ptp(map[id].center.x, map[id].center.y);
-		move_to_ptp(map[id].capture.x, map[id].capture.y);
-		pause(3000);
-		move_to_ptp(map[id].center.x, map[id].center.y);*/
+		bprintf("backing up\n");
+		nav_straight_stop(10, -96);
 	}	
 }
