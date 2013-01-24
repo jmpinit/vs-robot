@@ -44,3 +44,22 @@ float encoder_read_avg(void) {
 float vps_to_encoder(float dist) {
 	return dist*TICKS_PER_VPS;
 }
+
+unsigned char vps_get_territory(void) {
+	unsigned char id = 0;
+	float angle = within(-180, (atan2(bot.x, bot.y)/M_PI)*180, 180);
+	if(angle>150||angle<-150)
+		id = 0;
+	else if(angle>-150 && angle<-90)
+		id = 1;
+	else if(angle>-90 && angle<-30)
+		id = 2;
+	else if(angle>-30 && angle<30)
+		id = 3;
+	else if(angle>30 && angle<90)
+		id = 4;
+	else if(angle>90 && angle<150)
+		id = 5;
+
+	return id;
+}
