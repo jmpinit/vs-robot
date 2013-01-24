@@ -1,8 +1,81 @@
 #include <joyos.h>
-#include "inc/util_math.h"
+#include <math.h>
 #include "inc/sensors.h"
+#include "inc/util_math.h"
+#include "inc/control.h"
 
-static float gyro_transform = 0;
+#define HIST_SHARP	10
+
+typedef struct {
+	float sharp[3];
+} bot_senses;
+
+bot_senses senses;
+
+float sharp_left[HIST_SHARP];
+float sharp_right[HIST_SHARP];
+float sharp_back[HIST_SHARP];
+
+int sensor(void) {
+	while(true) {
+		//move back histories
+		for(int i=HIST_SHARP-1; i>0; i--)
+			sharp_left[i] = sharp_left[i-1];
+		for(int i=HIST_SHARP-1; i>0; i--)
+			sharp_right[i] = sharp_left[i-1];
+		for(int i=HIST_SHARP-1; i>0; i--)
+			sharp_back[i] = sharp_left[i-1];
+
+		//add new values
+		sharp_left[0] = analog_read(SHARP_LEFT);
+		sharp_right[0] = analog_read(SHARP_RIGHT);
+		sharp_back[0] = analog_read(SHARP_BACK);
+
+		//running average of distances
+		float total = 0;
+		for(int i=0; i<HIST_SHARP; i++)
+			total += sharp_left[i];
+		senses.sharp[0] = total/((float)HIST_SHARP);
+
+		total = 0;
+		for(int i=0; i<HIST_SHARP; i++)
+			total += sharp_right[i];
+		senses.sharp[1] = total/((float)HIST_SHARP);
+
+		total = 0;
+		for(int i=0; i<HIST_SHARP; i++)
+			total += sharp_back[i];
+		senses.sharp[2] = total/((float)HIST_SHARP);
+
+		yield();
+	}
+
+	return 0;
+}
+
+float sharp_get_avg(unsigned char id) {
+	unsigned int i;
+
+	switch(id) {
+		case SHARP_LEFT:
+			i = 0;
+			break;
+		case SHARP_RIGHT:
+			i = 1;
+			break;
+		case SHARP_BACK:
+			i = 2;
+			break;
+		default:
+			i = 0;
+	}
+
+	return senses.sharp[i];
+}
+
+void sense_init(void) {
+	create_thread(&sensor, STACK_DEFAULT, 0, "sense_thread");
+}
 
 void gyro_zero(void) {
 	gyro_transform = within(-180, gyro_get_degrees() - vps_get_degrees(), 180);

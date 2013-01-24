@@ -25,6 +25,11 @@
 #define vps_enemy_x		game.coords[1].x
 #define vps_enemy_y		game.coords[1].y
 
+int sensor(void);
+void sense_init(void);
+
+float sharp_get_avg(unsigned char id);
+
 float gyro_absolute(void);
 void gyro_zero(void);
 
