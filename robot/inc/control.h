@@ -63,9 +63,10 @@ void nav_set_heading(float heading);
 void nav_init(void);
 
 void nav_straight(int distance, int v);
+void nav_straight_stop(int distance, int v);
 void nav_turn_to(float heading);
 
-void move_to_ptp(int x, int y);
+void move_to_ptp(int x, int y, int vel);
 void move_to(int x, int y);
 float pid_calc(pid_data* prefs, float current, float target);
 

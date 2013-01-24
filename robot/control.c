@@ -9,6 +9,7 @@
 #define CURRENT_BLOCKED	15		//indicator of obstruction
 #define CURRENT_MAX		20		//danger level for motors
 #define MAX_SPEED		245		//the fastest the robot will go (leave room for PID)
+#define ACCEL_ENCODER	10.0
 
 #define GATE_OPEN		110
 #define GATE_CLOSED		511
@@ -22,18 +23,14 @@ float angle_to_target(int x, int y) {
 	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
 }
 
-void move_to_ptp(int x, int y) {
+void move_to_ptp(int x, int y, int vel) {
 	vps_update();
 	while(vps_is_shit()) { vps_update(); }
 	gyro_zero();
 
 	float dist = vps_to_encoder(distance(vps_x, vps_y, x, y));
 	nav_turn_to(angle_to_target(x, y));
-	nav_straight(dist, 235);
-	nav_set_velocity(0);
-	bot.velocity = 0;
-	motor_brake(MOTOR_LEFT);
-	motor_brake(MOTOR_RIGHT);
+	nav_straight_stop(dist, vel);
 }
 
 void move_to(int x, int y) {
@@ -73,7 +70,7 @@ void nav_init(void) {
 	pid_linear.Kp		= 3.0;
 	pid_linear.Kd		= 0.1;
 	//pid_linear.Ki		= 0.05;
-	pid_linear.Ki		= 0.012;
+	pid_linear.Ki		= 0.014;
 
 	//init the settings
 	bot.accel = 2;
@@ -89,6 +86,18 @@ void nav_set_heading(float heading) {
 
 void nav_set_velocity(int v) {
 	bot.target_velocity = v;
+}
+
+void nav_straight_stop(int distance, int v) {
+	int stop_distance = (float)(distance-(1.0/bot.deccel)*ACCEL_ENCODER);	//account for decceleration
+	
+	nav_straight(stop_distance, v);
+	nav_set_velocity(64);
+	while(encoder_read_avg()<distance) { NOTHING; yield(); }	//drive for that length
+	nav_set_velocity(0);
+	motor_brake(MOTOR_LEFT);
+	motor_brake(MOTOR_RIGHT);
+	bot.velocity = 0;
 }
 
 void nav_straight(int distance, int v) {
