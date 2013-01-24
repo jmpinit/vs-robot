@@ -20,7 +20,7 @@
 static pid_data pid_linear;
 
 float angle_to_target(int x, int y) {
-	return (atan2(y-vps_y, x-vps_x)/M_PI)*180;
+	return (atan2(y-bot.y, x-bot.x)/M_PI)*180;
 }
 
 void move_to_ptp(int x, int y, int vel) {
@@ -28,7 +28,7 @@ void move_to_ptp(int x, int y, int vel) {
 	while(vps_is_shit()) { vps_update(); }
 	gyro_zero();
 
-	float dist = vps_to_encoder(distance(vps_x, vps_y, x, y));
+	float dist = vps_to_encoder(distance(bot.x, bot.x, x, y));
 	nav_turn_to(angle_to_target(x, y));
 	nav_straight_stop(dist, vel);
 }
@@ -38,7 +38,7 @@ void move_to(int x, int y) {
 	while(vps_is_shit()) { vps_update(); }
 	gyro_zero();
 
-	float dist = vps_to_encoder(distance(vps_x, vps_y, x, y));
+	float dist = vps_to_encoder(distance(bot.x, bot.y, x, y));
 	nav_straight(dist, 96);
 	bot.target_heading = angle_to_target(x, y);
 }

@@ -33,19 +33,11 @@ int usetup(void) {
 }
 
 int umain(void) {
-	#include "calibration/servo_pos.c"
-
-	pause(3000);
-
+	sense_init();
 	nav_init();
 
-	move_to(620, 1048);
-	move_to(-590, 1048);
-	move_to(-1200, 10);
-	move_to(-590, -1048);
-	move_to(620, -1048);
-	move_to(1200, 10);
-	while(true) { NOTHING; }
+	//manager_explore();
+	manager_visit();
 
     return 0;
 }

@@ -56,9 +56,7 @@ void manager_visit(void) {
 		bprintf("at waypoint\n");
 
 		while(vps_is_shit()) { vps_update(); yield(); }
-		//nav_turn_to(angle_to_target(this.capture.x, this.capture.y)+180);
 		nav_turn_to(this.heading_mine);
-		//float dist = vps_to_encoder(distance(vps_x, vps_y, this.capture.x, this.capture.y));
 		bprintf("approaching gears\n");
 		nav_straight_stop(10, 96);
 
