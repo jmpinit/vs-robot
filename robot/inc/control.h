@@ -27,6 +27,7 @@ typedef struct {
 	bool obstructed;		//whether the robot is having difficulty moving
 	
 	float velocity;			//current velocity
+	float real_velocity;	//current sensed velocity (via vps, encoders, etc.)
 	float heading;			//current absolute heading
 
 	int target_velocity;	//velocity to approach

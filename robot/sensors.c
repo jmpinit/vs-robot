@@ -17,9 +17,14 @@ float sharp_right[HIST_SHARP];
 float sharp_back[HIST_SHARP];
 
 int last_encoder;
+pt last_pos;
 
 int sensor(void) {
 	last_encoder = 0;
+
+	while(vps_is_shit()) { vps_update(); yield(); }
+	last_pos.x = vps_x;
+	last_pos.y = vps_y;
 
 	while(true) {
 		/* VPS */
@@ -40,17 +45,14 @@ int sensor(void) {
 			bot.y = vps_y;
 		}
 
-		//obstruction
-		//printf("[%d, %d]", motor_get_current(0), motor_get_current(1));
+		/* REAL(ISH) VELOCITY */
+		int dx = bot.x-last_pos.x;
+		int dy = bot.y-last_pos.y;
+		bot.real_velocity = distance(0, 0, dx, dy);
 
-		/*bool obstructed = false;
-		  for(unsigned char i=0; i<4; i++) {
-		  if(motor_get_current(i)>CURRENT_BLOCKED) obstructed = true;
-		//shut off burning motors
-		if(motor_get_current(i)>CURRENT_MAX) motor_set_vel(i, 0);
-		}
-
-		bot.obstructed = obstructed;*/
+		/* OBSTRUCTION */
+		bot.obstructed = false;
+		if(bot.velocity>1 && bot.real_velocity<5) bot.obstructed = true;
 
 		/* SHARP DISTANCE SENSORS */
 		//move back histories
@@ -81,9 +83,6 @@ int sensor(void) {
 		for(int i=0; i<HIST_SHARP; i++)
 			total += sharp_back[i];
 		senses.sharp[2] = total/((float)HIST_SHARP);
-
-		/* POSITION */
-
 
 		yield();
 	}
