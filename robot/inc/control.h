@@ -5,6 +5,7 @@
 
 #define MOTOR_LEFT		0
 #define MOTOR_RIGHT		1
+#define MOTOR_CAPTURE	2
 
 #define SERVO_GATE		0
 #define SERVO_LEVER		1
@@ -34,6 +35,8 @@ typedef struct {
 	float accel;			//linear acceleration
 	float deccel;			//linear decceleration
 	float w;				//radial acceleration
+
+	float gyro_transform;	//constant offset of gyro from VPS heading
 } robot;
 
 extern robot bot; 

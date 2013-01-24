@@ -78,11 +78,11 @@ void sense_init(void) {
 }
 
 void gyro_zero(void) {
-	gyro_transform = within(-180, gyro_get_degrees() - vps_get_degrees(), 180);
+	bot.gyro_transform = within(-180, gyro_get_degrees() - vps_get_degrees(), 180);
 }
 
 float gyro_absolute(void) {
-	return within(-180, gyro_get_degrees() - gyro_transform, 180);
+	return within(-180, gyro_get_degrees() - bot.gyro_transform, 180);
 }
 
 float vps_get_degrees(void) {
