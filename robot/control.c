@@ -24,13 +24,15 @@ float angle_to_target(int x, int y) {
 }
 
 void move_to_ptp(int x, int y, int vel) {
-	vps_update();
-	while(vps_is_shit()) { vps_update(); }
-	gyro_zero();
+	do {
+		vps_update();
+		while(vps_is_shit()) { vps_update(); }
+		gyro_zero();
 
-	float dist = vps_to_encoder(distance(bot.x, bot.x, x, y));
-	nav_turn_to(angle_to_target(x, y));
-	nav_straight_stop(dist, vel);
+		float dist = vps_to_encoder(distance(bot.x, bot.x, x, y));
+		nav_turn_to(angle_to_target(x, y));
+		nav_straight_stop(dist, vel);
+	} while(distance(bot.x, bot.y, x, y)>256);
 }
 
 void move_to(int x, int y) {
