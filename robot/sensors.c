@@ -25,17 +25,15 @@ int sensor(void) {
 	last_time = get_time_us();
 
 	if(vps_is_shit()) {
-		bot.x = map[1].center.x;
-		bot.y = map[1].center.y;
+		x = map[1].center.x;
+		y = map[1].center.y;
 	} else {
-		bot.x = vps_x;
-		bot.y = vps_y;
+		x = vps_x;
+		y = vps_y;
 	}
 
-	x = bot.x;
-	y = bot.y;
-	last_pos.x = bot.x;
-	last_pos.y = bot.y;
+	last_pos.x = (int)x;
+	last_pos.y = (int)y;
 
 	while(true) {
 		/* VPS */
@@ -164,7 +162,11 @@ unsigned char vps_get_rate(unsigned char id) {
 }
 
 bool vps_is_shit(void) {
+	#ifdef NO_VPS
+	return true;
+	#else
 	return vps_x==0 && vps_y==0 && vps_heading==0;
+	#endif
 }
 
 float encoder_read_avg(void) {
@@ -181,7 +183,8 @@ float encoder_to_vps(int ticks) {
 
 unsigned char get_territory(void) {
 	unsigned char id = 0;
-	float angle = within(-180, (atan2(bot.x, bot.y)/M_PI)*180, 180);
+	float angle = within(-180, 360*atan2(bot.y, bot.x)/(2.0*M_PI), 180);
+	printf("%f (%d, %d)\n", angle, bot.x, bot.y);
 	if(angle>150||angle<-150)
 		id = 0;
 	else if(angle>-150 && angle<-90)

@@ -29,14 +29,16 @@ int usetup(void) {
 	else
 		team = TEAM_RED;
 
+	//start sensing
+	sense_init();
+
 	return 0;
 }
 
 int umain(void) {
-	sense_init();
 	nav_init();
 
-	go_territory(0, frob_read_range(0, 245));
+	go_territory(0, 100);
 	while(true) { NOTHING; }
 
     return 0;
