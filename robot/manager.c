@@ -6,6 +6,64 @@
 #include "inc/util_math.h"
 #include "inc/debug.h"
 
+#define BALLS_MAX 15
+
+int act;
+int territory_pts;
+int best_territory;
+int best_territory_pts;
+
+void play(void){ //ideally can we just loop this the whole game? put it in umain or something
+    switch act {
+    case 1:
+        //circle(radius, 255 ideally)
+        break;
+    case 2:
+        //circle finished to 20s left, dump balls if too many.
+        if (vps_get_owner(get_territory())!=team){
+            capture_territory(get_territory);
+        }
+        
+        else if (vps_get_balls(get_territory))>0){
+            mine_balls(get_territory);
+        }
+        
+        else {
+            //move to different territory NOT containg opponent
+            move_to(rank_territories);
+        }
+        break;
+    case 3:
+        //emergency ball dump before end
+        //dump balls anyway even if we think we don't have any?
+        break
+    }
+}
+
+int rank_territories(void){
+    for (int i=0; i<6; i++){
+        
+        territory_pts = 0; // reset territory score
+        
+        //find territories you/enemy aren't in, penalize them below anything else
+        if(i==get_territory() || i==enemy.territory())
+            territory_pts = -200;
+        else {
+            if (vps_get_owner(i)==!team)
+                territory_pts+=100; //points if we cap territory
+            territory_pts+=40*vps_get_balls; //change to 80 to include dumping?
+            territory_pts-=30*(i % 6); //penalizing farther away
+            
+        }
+        if(territory_pts>best_territory_pts){
+            best_territory_pts = territory_pts; //pick best
+            best_territory = i;
+        }
+            
+    }
+    return best_territory;
+}
+
 territory map[6] = {
 	//center		mine			capture			mine angle	capture angle
 	{{-1200, 10},	{-1688, 341},	{-1773, -355},	149.275,	27.25},
@@ -31,6 +89,10 @@ void manager_init(void) {
 	points[DUMP]	= 40;
 	points[EXPLORE]	= 30;
 	points[MINE]	= 40;
+    act = 1;
+    territory_pts = 0;
+    best_territory = 0;
+    best_territory_pts = 0;
 }
 
 void circle(unsigned int r, int vel) {
