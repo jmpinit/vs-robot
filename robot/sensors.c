@@ -179,7 +179,7 @@ float encoder_to_vps(int ticks) {
 	return ticks/TICKS_PER_VPS;
 }
 
-unsigned char vps_get_territory(void) {
+unsigned char get_territory(void) {
 	unsigned char id = 0;
 	float angle = within(-180, (atan2(bot.x, bot.y)/M_PI)*180, 180);
 	if(angle>150||angle<-150)

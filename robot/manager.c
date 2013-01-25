@@ -54,7 +54,7 @@ void circle(unsigned int r, int vel) {
 }
 
 void visit_one(void) {
-	unsigned char id = vps_get_territory();
+	unsigned char id = get_territory();
 	territory this = map[id];
 	move_to_ptp(this.center.x, this.center.y, 96);
 	while(vps_is_shit()) { vps_update(); yield(); }

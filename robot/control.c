@@ -4,6 +4,7 @@
 #include "inc/debug.h"
 #include "inc/sensors.h"
 #include "inc/control.h"
+#include "inc/manager.h"
 #include "inc/util_math.h"
 
 #define CURRENT_BLOCKED	15		//indicator of obstruction
@@ -19,11 +20,30 @@
 #define LEVER_MIDDLE	245
 #define LEVER_DOWN		170
 
-
 static pid_data pid_linear;
 
 float angle_to_target(int x, int y) {
 	return (atan2(y-bot.y, x-bot.x)/M_PI)*180;
+}
+
+void go_territory(unsigned char target, int vel) {
+	unsigned char current = get_territory();
+	unsigned char error = target-current;
+	
+	if(error==0) return;
+	if(abs(error>3)) {
+		//clockwise
+		while(current!=target) {
+			pt next = map[(--current)%6].center;
+			move_to_ptp(next.x, next.y, vel);
+		}
+	} else {
+		//counterclockwise
+		while(current!=target) {
+			pt next = map[(++current)%6].center;
+			move_to_ptp(next.x, next.y, vel);
+		}
+	}
 }
 
 void move_to_ptp(int x, int y, int vel) {
