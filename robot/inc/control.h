@@ -51,6 +51,9 @@ void gate_close(void);
 void lever_up(void);
 void lever_middle(void);
 void lever_down(void);
+void capture_red(void);
+void capture_blue(void);
+void wheel_capture(int turnspeed);
 
 /*
    NAVIGATION SYSTEM
