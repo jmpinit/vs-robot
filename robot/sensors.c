@@ -3,6 +3,7 @@
 #include "inc/sensors.h"
 #include "inc/util_math.h"
 #include "inc/control.h"
+#include "inc/manager.h"
 
 #define HIST_SHARP	10
 
@@ -16,34 +17,53 @@ float sharp_left[HIST_SHARP];
 float sharp_right[HIST_SHARP];
 float sharp_back[HIST_SHARP];
 
-int last_encoder;
+float x, y;
+long last_time;
 pt last_pos;
 
 int sensor(void) {
-	last_encoder = 0;
+	last_time = get_time_us();
 
-	while(vps_is_shit()) { vps_update(); yield(); }
-	last_pos.x = vps_x;
-	last_pos.y = vps_y;
+	if(vps_is_shit()) {
+		bot.x = map[1].center.x;
+		bot.y = map[1].center.y;
+	} else {
+		bot.x = vps_x;
+		bot.y = vps_y;
+	}
+
+	x = bot.x;
+	y = bot.y;
+	last_pos.x = bot.x;
+	last_pos.y = bot.y;
 
 	while(true) {
 		/* VPS */
 		vps_update();
 
 		/* ORIENTATION */
+		if(bot.velocity < 1 && abs(bot.heading-bot.target_heading)<8.0 && !vps_is_shit()) gyro_zero();
 		bot.heading = gyro_absolute();
 
 		/* POSITION */
 		if(vps_is_shit()) {
-			int ticks = encoder_read_avg()-last_encoder;
-			float d = encoder_to_vps(ticks);				//how far have we gone since last?
+			float dt = (get_time_us()-last_time)/1000000.0;
+			float ticks = bot.velocity * VEL_SLOPE;
+			float vps = encoder_to_vps(ticks);
+			float d = vps*dt;
 
-			bot.x += d*cos(bot.heading);
-			bot.y += d*sin(bot.heading);
+			//printf("%f %f %f %f\n", dt, ticks, vps, d);
+
+			x += d*cos(2.0*M_PI*bot.heading/360.0);
+			y += d*sin(2.0*M_PI*bot.heading/360.0);
 		} else {
-			bot.x = vps_x;
-			bot.y = vps_y;
+			x = vps_x;
+			y = vps_y;
 		}
+		bot.x = (int)x;
+		bot.y = (int)y;
+
+		last_time = get_time_us();
 
 		/* REAL(ISH) VELOCITY */
 		int dx = bot.x-last_pos.x;
