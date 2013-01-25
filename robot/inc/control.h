@@ -7,8 +7,8 @@
 #define MOTOR_RIGHT		1
 #define MOTOR_CAPTURE	2
 
-#define SERVO_GATE		0
-#define SERVO_LEVER		1
+#define SERVO_GATE		1
+#define SERVO_LEVER		0
 
 /* PID controller data */
 typedef struct {
