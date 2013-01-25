@@ -41,7 +41,7 @@ float vps_get_degrees(void);					//get the heading in degrees
 unsigned char vps_get_owner(unsigned char id);	//get the owner of a specified territory
 unsigned char vps_get_balls(unsigned char id);	//get ow many balls are remaining in a territory
 unsigned char vps_get_rate(unsigned char id);	//get rate info for specified territory
-unsigned char vps_get_territory(void);			//what territory are we in?
+unsigned char get_territory(void);				//what territory are we in?
 bool vps_is_shit(void);							//whether the latest VPS values are valid
 
 float encoder_read_avg(void);		//read the average of the two encoders
