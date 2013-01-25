@@ -2,3 +2,4 @@
 *.swp
 *.o
 *.log
+*.DS_Store
