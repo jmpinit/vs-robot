@@ -53,31 +53,25 @@ void circle(unsigned int r, int vel) {
 	}
 }
 
-void visit_one(void) {
-	unsigned char id = get_territory();
-	territory this = map[id];
-	move_to_ptp(this.center.x, this.center.y, 96);
-	while(vps_is_shit()) { vps_update(); yield(); }
-	nav_turn_to(this.heading_mine);
+void visit_one(unsigned char id) {
+	printf("going to %d\n", id);
+
+	go_territory(id, 96);
+
+	printf("at waypoint! turning...\n");
+
+	nav_turn_to(map[id].heading_mine);
+	printf("facing mine!\n");
+	pause(1000);
+	printf("approaching...\n");
 
 	//forward until we hit something
 	nav_set_velocity(96);
 	while(!digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT));
 
-	//make sure that we are square
-	if(!digital_read(CONTACT_LEFT) && digital_read(CONTACT_RIGHT)) {
-		while(!digital_read(CONTACT_LEFT)) {
-			nav_set_heading(bot.target_heading-1);
-			pause(10);
-		}
-	}
-
-	if(digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT)) {
-		while(!digital_read(CONTACT_RIGHT)) {
-			nav_set_heading(bot.target_heading+1);
-			pause(10);
-		}
-	}
+	//brake TODO make nav function
+	nav_stop();
+	printf("at mine!\n");
 
 	//attempt to mine
 	lever_middle();
