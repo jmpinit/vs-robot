@@ -9,10 +9,12 @@
 #define CURRENT_BLOCKED	15		//indicator of obstruction
 #define CURRENT_MAX		20		//danger level for motors
 #define MAX_SPEED		245		//the fastest the robot will go (leave room for PID)
+#define MIN_SPEED		35
 #define ACCEL_ENCODER	10.0
 
 #define GATE_OPEN		110
 #define GATE_CLOSED		511
+
 #define LEVER_UP		440
 #define LEVER_MIDDLE	245
 #define LEVER_DOWN		170
@@ -25,14 +27,10 @@ float angle_to_target(int x, int y) {
 
 void move_to_ptp(int x, int y, int vel) {
 	do {
-		vps_update();
-		while(vps_is_shit()) { vps_update(); }
-		gyro_zero();
-
 		float dist = vps_to_encoder(distance(bot.x, bot.x, x, y));
 		nav_turn_to(angle_to_target(x, y));
 		nav_straight_stop(dist, vel);
-	} while(distance(bot.x, bot.y, x, y)>256);
+	} while(distance(bot.x, bot.y, x, y)>512);
 }
 
 void move_to(int x, int y) {
@@ -67,7 +65,7 @@ robot bot;
 
 void nav_init(void) {
 	//init pid settings
-	pid_linear.epsilon	= 0.01;
+	pid_linear.epsilon	= 0.00;
 	pid_linear.dt		= 0.1;
 	pid_linear.Kp		= 3.0;
 	pid_linear.Kd		= 0.1;

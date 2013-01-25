@@ -16,6 +16,8 @@ typedef struct {
 	float heading_capture;
 } territory;
 
+extern territory map[];
+
 /*enum Activity {
 	CAPTURE,
 	DUMP,

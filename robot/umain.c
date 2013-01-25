@@ -29,6 +29,9 @@ int usetup(void) {
 	else
 		team = TEAM_RED;
 
+	if(team==TEAM_BLUE) bprintf("we are team blue!");
+	else bprintf("we are team red!");
+
 	return 0;
 }
 
@@ -36,8 +39,9 @@ int umain(void) {
 	sense_init();
 	nav_init();
 
-	//manager_explore();
-	manager_visit();
+	manager_explore();
+	visit_one();
+	while(true) { NOTHING; }
 
     return 0;
 }
