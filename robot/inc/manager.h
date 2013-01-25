@@ -25,7 +25,9 @@ typedef struct {
 
 //pick the next 
 //activity act_pick(void);
-void manager_explore(void);
+void circle(unsigned int r, int vel);
+void visit_one(void);
+void manager_explore(int vel);
 void manager_visit(void);
 
 #endif

@@ -33,18 +33,70 @@ void manager_init(void) {
 	points[MINE]	= 40;
 }
 
+void circle(unsigned int r, int vel) {
+	pid_data pid_circle;
+	pid_circle.epsilon	= 0.01;
+	pid_circle.dt		= 0.01;
+	pid_circle.Kp		= 0.01;
+	pid_circle.Kd		= 0.002;
+	pid_circle.Ki		= 0.0001;
+
+	float angle = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
+	float start = angle-16;
+	nav_turn_to(angle+90);
+	nav_set_velocity(vel);
+
+	while(within(0, angle-start, 360)>10) {
+		angle = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
+		nav_set_heading(angle+90);
+		yield();
+	}
+}
+
 void visit_one(void) {
 	unsigned char id = vps_get_territory();
 	territory this = map[id];
 	move_to_ptp(this.center.x, this.center.y, 96);
 	while(vps_is_shit()) { vps_update(); yield(); }
-	nav_turn_to(this.heading_capture);
+	nav_turn_to(this.heading_mine);
+
+	//forward until we hit something
+	nav_set_velocity(96);
+	while(!digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT));
+
+	//make sure that we are square
+	if(!digital_read(CONTACT_LEFT) && digital_read(CONTACT_RIGHT)) {
+		while(!digital_read(CONTACT_LEFT)) {
+			nav_set_heading(bot.target_heading-1);
+			pause(10);
+		}
+	}
+
+	if(digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT)) {
+		while(!digital_read(CONTACT_RIGHT)) {
+			nav_set_heading(bot.target_heading+1);
+			pause(10);
+		}
+	}
+
+	//attempt to mine
+	lever_middle();
+	for(int i=0; i<5; i++) {
+		lever_down();
+		pause(300);
+		lever_middle();
+		pause(300);
+	}
+	pause(500);
+
+	bprintf("backing up\n");
+	nav_straight_stop(30, -96);
 }
 
-void manager_explore(void) {
+void manager_explore(int vel) {
 	bprintf("exploring\n");
 	for(unsigned char id=0; id<6; id++) {
-		move_to_ptp(map[(id+2)%6].center.x, map[(id+2)%6].center.y, 245);
+		move_to_ptp(map[(id+2)%6].center.x, map[(id+2)%6].center.y, vel);
 	}
 }
 
@@ -57,12 +109,40 @@ void manager_visit(void) {
 
 		while(vps_is_shit()) { vps_update(); yield(); }
 		nav_turn_to(this.heading_mine);
-		bprintf("approaching gears\n");
-		nav_straight_stop(10, 96);
+		bprintf("approaching mine\n");
 
+		//forward until we hit something
+		nav_set_velocity(96);
+		while(!digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT));
+
+		//make sure that we are square
+		if(!digital_read(CONTACT_LEFT) && digital_read(CONTACT_RIGHT)) {
+			while(!digital_read(CONTACT_LEFT)) {
+				nav_set_heading(bot.target_heading-1);
+				pause(10);
+			}
+		}
+
+		if(digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT)) {
+			while(!digital_read(CONTACT_RIGHT)) {
+				nav_set_heading(bot.target_heading+1);
+				pause(10);
+			}
+		}
+
+		//attempt to mine
+		lever_middle();
+		for(int i=0; i<5; i++) {
+			lever_down();
+			pause(300);
+			lever_middle();
+			pause(300);
+		}
+		pause(500);
+			
 		pause(1000);
 
 		bprintf("backing up\n");
-		nav_straight_stop(10, -96);
-	}	
+		nav_straight_stop(30, -96);
+	}
 }
