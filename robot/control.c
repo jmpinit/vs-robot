@@ -19,6 +19,7 @@
 #define LEVER_MIDDLE	245
 #define LEVER_DOWN		170
 
+
 static pid_data pid_linear;
 
 float angle_to_target(int x, int y) {
@@ -164,5 +165,9 @@ void lever_middle(void) {
 
 void lever_down(void) {
 	servo_set_pos(SERVO_LEVER, LEVER_DOWN);
+}
+
+void wheel_capture(int turnspeed){
+    motor_set_vel(MOTOR_CAPTURE, turnspeed);
 }
 
