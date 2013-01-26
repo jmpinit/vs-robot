@@ -3,6 +3,7 @@
 #include "inc/sensors.h"
 #include "inc/util_math.h"
 #include "inc/control.h"
+#include "inc/debug.h"
 #include "inc/manager.h"
 
 #define HIST_SHARP	10
@@ -20,6 +21,8 @@ float sharp_back[HIST_SHARP];
 float x, y;
 long last_time;
 pt last_pos;
+
+enemy other_bot;
 
 int sensor(void) {
 	last_time = get_time_us();
@@ -50,16 +53,21 @@ int sensor(void) {
 			float vps = encoder_to_vps(ticks);
 			float d = vps*dt;
 
-			//printf("%f %f %f %f\n", dt, ticks, vps, d);
-
 			x += d*cos(2.0*M_PI*bot.heading/360.0);
 			y += d*sin(2.0*M_PI*bot.heading/360.0);
 		} else {
 			x = vps_x;
 			y = vps_y;
+
+			//keep track of enemy too
+			other_bot.x = vps_enemy_x;
+			other_bot.y = vps_enemy_y;
 		}
 		bot.x = (int)x;
 		bot.y = (int)y;
+
+		/*printf("%d %d\n", bot.x, bot.y);
+		bprintf("%d %d\n", bot.x, bot.y);*/
 
 		last_time = get_time_us();
 
@@ -184,7 +192,6 @@ float encoder_to_vps(int ticks) {
 unsigned char get_territory(void) {
 	unsigned char id = 0;
 	float angle = within(-180, 360*atan2(bot.y, bot.x)/(2.0*M_PI), 180);
-	printf("%f (%d, %d)\n", angle, bot.x, bot.y);
 	if(angle>150||angle<-150)
 		id = 0;
 	else if(angle>-150 && angle<-90)

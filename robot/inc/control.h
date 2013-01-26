@@ -26,6 +26,8 @@ typedef struct {
 typedef struct {
 	int x;
 	int y;
+	unsigned char territory;
+
 	bool obstructed;		//whether the robot is having difficulty moving
 	
 	float velocity;			//current velocity
@@ -42,7 +44,14 @@ typedef struct {
 	float gyro_transform;	//constant offset of gyro from VPS heading
 } robot;
 
+typedef struct {
+	int x;
+	int y;
+	unsigned char territory;
+} enemy;
+
 extern robot bot; 
+extern enemy other_bot;
 
 /*
    MISC ACTUATION
