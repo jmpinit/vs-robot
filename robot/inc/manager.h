@@ -1,10 +1,10 @@
 #ifndef _MANAGER_
 #define _MANAGER_
 
+#include "util_math.h"
+
 #define TEAM_RED	0
 #define TEAM_BLUE	1
-
-#include "util_math.h"
 
 extern unsigned char team;
 
@@ -28,7 +28,7 @@ extern territory map[];
 //pick the next 
 //activity act_pick(void);
 void circle(unsigned int r, int vel);
-void visit_one(void);
+void visit_one(unsigned char id);
 void manager_explore(int vel);
 void manager_visit(void);
 

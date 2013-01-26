@@ -1,67 +1,75 @@
 #include <joyos.h>
 #include <math.h>
+
 #include "inc/manager.h"
+
 #include "inc/sensors.h"
 #include "inc/control.h"
 #include "inc/util_math.h"
 #include "inc/debug.h"
 
-#define BALLS_MAX 15
+#include "activities/capture.c"
+#include "activities/dump.c"
+#include "activities/explore.c"
+#include "activities/mine.c"
+
+#define MOVE_SPEED	96
+#define BALLS_MAX	15
 
 int act;
-int territory_pts;
-int best_territory;
-int best_territory_pts;
 
-void play(void){ //ideally can we just loop this the whole game? put it in umain or something
-    switch act {
-    case 1:
-        //circle(radius, 255 ideally)
-        break;
-    case 2:
-        //circle finished to 20s left, dump balls if too many.
-        if (vps_get_owner(get_territory())!=team){
-            capture_territory(get_territory);
-        }
-        
-        else if (vps_get_balls(get_territory))>0){
-            mine_balls(get_territory);
-        }
-        
-        else {
-            //move to different territory NOT containg opponent
-            move_to(rank_territories);
-        }
-        break;
-    case 3:
-        //emergency ball dump before end
-        //dump balls anyway even if we think we don't have any?
-        break
-    }
+int get_best(void);
+
+void play(void) {
+	switch(act) {
+		case 0:
+			//exploration
+			circle(1024, 255);
+			break;
+		case 1:
+			//circle finished to 20s left, dump balls if too many.
+			vps_update();
+			if(vps_get_owner(bot.territory)!=team) {		//if not ours yet
+				capture(bot.territory);			//capture it
+			} else if(vps_get_balls(bot.territory)>0) {	//if it is ours and there are balls
+				mine(bot.territory);						//get the balls
+			} else {
+				//move to different territory NOT containg opponent
+				go_territory(get_best(), MOVE_SPEED);
+			}
+			break;
+		case 2:
+			//TODO emergency ball dump before end
+			//dump balls anyway even if we think we don't have any?
+			break;
+	}
 }
 
-int rank_territories(void){
-    for (int i=0; i<6; i++){
-        
-        territory_pts = 0; // reset territory score
+int get_best(void){
+	unsigned char best = 0;
+	unsigned char best_pts = 0;
+
+    for(int id=0; id<6; id++) {
+        int pts = 0;
         
         //find territories you/enemy aren't in, penalize them below anything else
-        if(i==get_territory() || i==enemy.territory())
-            territory_pts = -200;
-        else {
-            if (vps_get_owner(i)==!team)
-                territory_pts+=100; //points if we cap territory
-            territory_pts+=40*vps_get_balls; //change to 80 to include dumping?
-            territory_pts-=30*(i % 6); //penalizing farther away
+        if(id==bot.territory || id==other_bot.territory) {
+            pts = -200;
+		} else {
+            if(vps_get_owner(id)==!team)	//is it ours?
+                pts += 100;					//points if we cap territory
+            pts += 40*vps_get_balls(id);	//change to 80 to include dumping?
+            pts -= 30*(id % 6);				//penalize for being far away
             
         }
-        if(territory_pts>best_territory_pts){
-            best_territory_pts = territory_pts; //pick best
-            best_territory = i;
+
+        if(pts>best_pts){
+            best_pts = pts; //pick best
+            best = id;
         }
             
     }
-    return best_territory;
+    return best;
 }
 
 territory map[6] = {
@@ -89,10 +97,8 @@ void manager_init(void) {
 	points[DUMP]	= 40;
 	points[EXPLORE]	= 30;
 	points[MINE]	= 40;
-    act = 1;
-    territory_pts = 0;
-    best_territory = 0;
-    best_territory_pts = 0;
+
+    act = 0;
 }
 
 void circle(unsigned int r, int vel) {
@@ -120,12 +126,11 @@ void visit_one(unsigned char id) {
 
 	go_territory(id, 96);
 
-	printf("at waypoint! turning...\n");
+	//printf("at waypoint! turning...\n");
 
 	nav_turn_to(map[id].heading_mine);
-	printf("facing mine!\n");
-	pause(1000);
-	printf("approaching...\n");
+	//printf("facing mine!\n");
+	//printf("approaching...\n");
 
 	//forward until we hit something
 	nav_set_velocity(96);
@@ -133,7 +138,7 @@ void visit_one(unsigned char id) {
 
 	//brake TODO make nav function
 	nav_stop();
-	printf("at mine!\n");
+	//printf("at mine!\n");
 
 	//attempt to mine
 	lever_middle();
@@ -145,7 +150,6 @@ void visit_one(unsigned char id) {
 	}
 	pause(500);
 
-	bprintf("backing up\n");
 	nav_straight_stop(30, -96);
 }
 

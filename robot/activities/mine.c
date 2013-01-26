@@ -4,7 +4,7 @@
 #define MINE_SPEED 300 //in milliseconds
 #define TIMEOUT_TRIES 3
 
-void mine-balls(int territory){
+void mine(unsigned char territory){
     int timestried = 0;
     int ballsremaining = 0;
     
