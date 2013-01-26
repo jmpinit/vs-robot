@@ -38,7 +38,7 @@ int usetup(void) {
 int umain(void) {
 	nav_init();
 
-	go_territory(0, 100);
+	for(int i=0; i<6; i++) visit_one(i);
 	while(true) { NOTHING; }
 
     return 0;

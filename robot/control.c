@@ -47,13 +47,16 @@ void go_territory(unsigned char target, int vel) {
 }
 
 void go_to(int x, int y, int vel) {
-	do {
+	//do {
+		printf("go_to: going to (%d, %d)\n", x, y);
 		float dist = vps_to_encoder(distance(bot.x, bot.x, x, y));
 		nav_turn_to(angle_to_target(x, y));
-		nav_straight(dist, vel);
+		nav_straight(dist-5, vel);
 		nav_stop();
 		pause(10);
-	} while(distance(bot.x, bot.y, x, y)>CLOSE_ENOUGH);
+	//} while(distance(bot.x, bot.y, x, y)>CLOSE_ENOUGH);
+
+	printf("go_to: success!\n");
 }
 
 float pid_calc(pid_data* prefs, float current, float target) {

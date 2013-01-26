@@ -122,15 +122,15 @@ void circle(unsigned int r, int vel) {
 }
 
 void visit_one(unsigned char id) {
-	printf("going to %d\n", id);
+	printf("visiting %d\n", id);
 
 	go_territory(id, 96);
 
-	//printf("at waypoint! turning...\n");
+	printf("at waypoint! turning...\n");
 
 	nav_turn_to(map[id].heading_mine);
-	//printf("facing mine!\n");
-	//printf("approaching...\n");
+	printf("facing mine!\n");
+	printf("approaching...\n");
 
 	//forward until we hit something
 	nav_set_velocity(96);
@@ -141,6 +141,7 @@ void visit_one(unsigned char id) {
 	//printf("at mine!\n");
 
 	//attempt to mine
+	printf("mining!\n");
 	lever_middle();
 	for(int i=0; i<5; i++) {
 		lever_down();
@@ -150,13 +151,14 @@ void visit_one(unsigned char id) {
 	}
 	pause(500);
 
+	printf("backing up\n");
 	nav_straight_stop(30, -96);
 }
 
 void manager_explore(int vel) {
 	bprintf("exploring\n");
 	for(unsigned char id=0; id<6; id++) {
-		move_to_ptp(map[(id+2)%6].center.x, map[(id+2)%6].center.y, vel);
+		go_to(map[(id+2)%6].center.x, map[(id+2)%6].center.y, vel);
 	}
 }
 
@@ -164,7 +166,7 @@ void manager_visit(void) {
 	for(unsigned char id=0; id<6; id++) {
 		territory this = map[(id+2)%6];
 		bprintf("visiting %d\n", (id+2)%6);
-		move_to_ptp(this.center.x, this.center.y, 96);
+		go_to(this.center.x, this.center.y, 96);
 		bprintf("at waypoint\n");
 
 		while(vps_is_shit()) { vps_update(); yield(); }
