@@ -85,8 +85,7 @@ void nav_straight_stop(int distance, int v);
 void nav_turn_to(float heading);
 
 void go_territory(unsigned char target, int vel);
-void move_to_ptp(int x, int y, int vel);
-void move_to(int x, int y);
+void go_to(int x, int y, int vel);
 float pid_calc(pid_data* prefs, float current, float target);
 
 #endif

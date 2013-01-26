@@ -35,18 +35,18 @@ void go_territory(unsigned char target, int vel) {
 		//clockwise
 		while(current!=target) {
 			pt next = map[(--current)%6].center;
-			move_to_ptp(next.x, next.y, vel);
+			go_to(next.x, next.y, vel);
 		}
 	} else {
 		//counterclockwise
 		while(current!=target) {
 			pt next = map[(++current)%6].center;
-			move_to_ptp(next.x, next.y, vel);
+			go_to(next.x, next.y, vel);
 		}
 	}
 }
 
-void move_to_ptp(int x, int y, int vel) {
+void go_to(int x, int y, int vel) {
 	do {
 		float dist = vps_to_encoder(distance(bot.x, bot.x, x, y));
 		nav_turn_to(angle_to_target(x, y));
@@ -54,16 +54,6 @@ void move_to_ptp(int x, int y, int vel) {
 		nav_stop();
 		pause(10);
 	} while(distance(bot.x, bot.y, x, y)>CLOSE_ENOUGH);
-}
-
-void move_to(int x, int y) {
-	vps_update();
-	while(vps_is_shit()) { vps_update(); }
-	gyro_zero();
-
-	float dist = vps_to_encoder(distance(bot.x, bot.y, x, y));
-	nav_straight(dist, 96);
-	bot.target_heading = angle_to_target(x, y);
 }
 
 float pid_calc(pid_data* prefs, float current, float target) {
