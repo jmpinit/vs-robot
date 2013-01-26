@@ -30,7 +30,7 @@ void go_territory(unsigned char target, int vel) {
 	unsigned char current = get_territory();
 	unsigned char error = target-current;
 	
-	if(error==0) return;
+	if(error==0 && distance(bot.x, bot.y, map[current].center.x, map[current].center.y)<CLOSE_ENOUGH) return;
 	if(abs(error>3)) {
 		//clockwise
 		while(current!=target) {
@@ -50,8 +50,10 @@ void move_to_ptp(int x, int y, int vel) {
 	do {
 		float dist = vps_to_encoder(distance(bot.x, bot.x, x, y));
 		nav_turn_to(angle_to_target(x, y));
-		nav_straight_stop(dist, vel);
-	} while(distance(bot.x, bot.y, x, y)>512);
+		nav_straight(dist, vel);
+		nav_stop();
+		pause(10);
+	} while(distance(bot.x, bot.y, x, y)>CLOSE_ENOUGH);
 }
 
 void move_to(int x, int y) {
@@ -107,6 +109,13 @@ void nav_set_heading(float heading) {
 
 void nav_set_velocity(int v) {
 	bot.target_velocity = v;
+}
+
+void nav_stop(void) {
+	nav_set_velocity(0);
+	bot.velocity = 0;
+	motor_brake(MOTOR_LEFT);
+	motor_brake(MOTOR_RIGHT);
 }
 
 void nav_straight_stop(int distance, int v) {

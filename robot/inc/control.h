@@ -3,6 +3,8 @@
 
 #include "util_math.h"
 
+#define CLOSE_ENOUGH	512
+
 #define MOTOR_LEFT		0
 #define MOTOR_RIGHT		1
 #define MOTOR_CAPTURE	2
@@ -66,6 +68,7 @@ void tick_motion(void);	//smooth control of motors
 
 void nav_set_velocity(int v);
 void nav_set_heading(float heading);
+void nav_stop(void);
 void nav_init(void);
 
 void nav_straight(int distance, int v);
