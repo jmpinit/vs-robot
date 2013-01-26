@@ -27,7 +27,7 @@ float angle_to_target(int x, int y) {
 }
 
 void go_territory(unsigned char target, int vel) {
-	unsigned char current = get_territory();
+	unsigned char current = get_territory(bot.x, bot.y);
 	unsigned char error = target-current;
 	
 	if(error==0 && distance(bot.x, bot.y, map[current].center.x, map[current].center.y)<CLOSE_ENOUGH) return;
