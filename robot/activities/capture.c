@@ -4,6 +4,7 @@
 #include "../inc/activities/capture.h"
 
 #define CAPTURE_CURRENT	10
+#define FUDGE			10
 
 void capture(unsigned char id) {
 	printf("= capturing %d =\n", id);
@@ -12,7 +13,7 @@ void capture(unsigned char id) {
 
 	printf("at waypoint! turning...\n");
 
-	nav_turn_to(within(-180, angle_between(bot.x, bot.y, arena[id].capture.x, arena[id].capture.y)+180, 180));
+	nav_turn_to(within(-180, angle_between(bot.x, bot.y, arena[id].capture.x, arena[id].capture.y)+180-FUDGE, 180));
 	printf("back facing capture!\n");
 	printf("approaching...\n");
 
@@ -37,6 +38,9 @@ void capture(unsigned char id) {
 		motor_set_vel(MOTOR_CAPTURE, (team==TEAM_BLUE)? i: -i);
 		pause(5);
 	}
+
+	motor_set_vel(MOTOR_CAPTURE, (team==TEAM_BLUE)? 255: -255);
+	pause(800);
 
 	printf("spinning down\n");
 	for(int i=255; i>=0; i--) {
