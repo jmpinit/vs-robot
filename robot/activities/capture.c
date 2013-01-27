@@ -6,15 +6,6 @@
 #define CAPTURE_CURRENT	10
 
 void capture(unsigned char id) {
-    /*while (abs(currentspeed)<MAX_SPEED && vps_get_owner(territory)!=team) {
-        if(team==TEAM_RED)
-            currentspeed+=TURN_ACCEL;
-        else
-            currentspeed -=TURN_ACCEL;
-        wheel_capture(currentspeed);
-        pause(100);
-    }*/
-
 	printf("= capturing %d =\n", id);
 
 	go_territory(id, 96);
