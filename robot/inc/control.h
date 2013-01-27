@@ -3,6 +3,7 @@
 
 #include "util_math.h"
 
+#define MIN_SPEED		35
 #define CLOSE_ENOUGH	512
 
 #define MOTOR_LEFT		0
