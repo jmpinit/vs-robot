@@ -25,7 +25,5 @@ void play(void);
 //activity act_pick(void);
 void circle(unsigned int r, int vel);
 void visit_one(unsigned char id);
-void manager_explore(int vel);
-void manager_visit(void);
 
 #endif
