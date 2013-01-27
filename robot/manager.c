@@ -21,6 +21,9 @@ int act;
 int get_best(void);
 
 void play(void) {
+	for(unsigned char i=0; i<6; i++) capture(i);
+	halt();
+
 	switch(act) {
 		case 0:
 			//exploration
@@ -122,37 +125,8 @@ void circle(unsigned int r, int vel) {
 }
 
 void visit_one(unsigned char id) {
-	printf("visiting %d\n", id);
-
-	go_territory(id, 96);
-
-	printf("at waypoint! turning...\n");
-
-	nav_turn_to(map[id].heading_mine);
-	printf("facing mine!\n");
-	printf("approaching...\n");
-
-	//forward until we hit something
-	nav_set_velocity(96);
-	while(!digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT));
-
-	//brake TODO make nav function
-	nav_stop();
-	//printf("at mine!\n");
-
-	//attempt to mine
-	printf("mining!\n");
-	lever_middle();
-	for(int i=0; i<5; i++) {
-		lever_down();
-		pause(300);
-		lever_middle();
-		pause(300);
-	}
-	pause(500);
-
-	printf("backing up\n");
-	nav_straight_stop(30, -96);
+	capture(id);
+	mine(id);
 }
 
 void manager_explore(int vel) {
