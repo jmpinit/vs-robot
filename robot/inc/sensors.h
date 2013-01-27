@@ -3,7 +3,7 @@
 
 #include "util_math.h"
 
-#define TICKS_PER_VPS	0.07		//conversion between encoders and VPS
+#define TICKS_PER_VPS	0.082687	//conversion between encoders and VPS
 #define VEL_SLOPE		0.279972	// ticks/sec = vel_slope * motor_vel
 
 #define ENCODER_LEFT	24
