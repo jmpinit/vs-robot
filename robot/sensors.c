@@ -66,8 +66,7 @@ int sensor(void) {
 		bot.x = (int)x;
 		bot.y = (int)y;
 
-		/*printf("%d %d\n", bot.x, bot.y);
-		bprintf("%d %d\n", bot.x, bot.y);*/
+		//printf("%d %d\n", bot.x, bot.y);
 
 		last_time = get_time_us();
 
@@ -170,11 +169,7 @@ unsigned char vps_get_rate(unsigned char id) {
 }
 
 bool vps_is_shit(void) {
-	#ifdef NO_VPS
-	return true;
-	#else
 	return vps_x==0 && vps_y==0 && vps_heading==0;
-	#endif
 }
 
 float encoder_read_avg(void) {
