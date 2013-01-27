@@ -17,10 +17,18 @@
 #define BALLS_MAX	15
 
 int act;
+unsigned char points[4];
 
 int get_best(void);
 
 void play(void) {
+	/*points[CAPTURE] = 100;
+	points[DUMP]	= 40;
+	points[EXPLORE]	= 30;
+	points[MINE]	= 40;*/
+
+    act = 0;
+
 	for(unsigned char i=0; i<6; i++) capture(i);
 	halt();
 
@@ -70,38 +78,8 @@ int get_best(void){
             best_pts = pts; //pick best
             best = id;
         }
-            
     }
     return best;
-}
-
-territory map[6] = {
-	//center		mine			capture			mine angle	capture angle
-	{{-1350, 20},	{-1688, 341},	{-1773, -355},	149.275,	27.25},
-	{{-625, -1060},	{-1165, -1322},	{-593, -1733},	-151.6,		83},
-	{{650, -1065},	{575, -1670}, 	{1180, -1360},	-93,		147.7},
-	{{1300, 30},	{1664, -343},	{1711, 388},	-32.8,		-151.9},
-	{{640, 1165},	{1110, 1300},	{555, 1697},	25.80,		-93.27},
-	{{-700, 1200},	{-555, 1634},	{-1200, 1370},	83.956,		-33.85}
-};
-
-/* scoring information */
-enum {
-	CAPTURE,	//per captured territory
-	DUMP,		//per ping pong ball in the center
-	EXPLORE,	//per explored territory
-	MINE		//per ping pong ball mined
-};
-
-unsigned char points[4];
-
-void manager_init(void) {
-	points[CAPTURE] = 100;
-	points[DUMP]	= 40;
-	points[EXPLORE]	= 30;
-	points[MINE]	= 40;
-
-    act = 0;
 }
 
 void circle(unsigned int r, int vel) {
@@ -132,53 +110,6 @@ void visit_one(unsigned char id) {
 void manager_explore(int vel) {
 	bprintf("exploring\n");
 	for(unsigned char id=0; id<6; id++) {
-		go_to(map[(id+2)%6].center.x, map[(id+2)%6].center.y, vel);
-	}
-}
-
-void manager_visit(void) {
-	for(unsigned char id=0; id<6; id++) {
-		territory this = map[(id+2)%6];
-		bprintf("visiting %d\n", (id+2)%6);
-		go_to(this.center.x, this.center.y, 96);
-		bprintf("at waypoint\n");
-
-		while(vps_is_shit()) { vps_update(); yield(); }
-		nav_turn_to(this.heading_mine);
-		bprintf("approaching mine\n");
-
-		//forward until we hit something
-		nav_set_velocity(96);
-		while(!digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT));
-
-		//make sure that we are square
-		if(!digital_read(CONTACT_LEFT) && digital_read(CONTACT_RIGHT)) {
-			while(!digital_read(CONTACT_LEFT)) {
-				nav_set_heading(bot.target_heading-1);
-				pause(10);
-			}
-		}
-
-		if(digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT)) {
-			while(!digital_read(CONTACT_RIGHT)) {
-				nav_set_heading(bot.target_heading+1);
-				pause(10);
-			}
-		}
-
-		//attempt to mine
-		lever_middle();
-		for(int i=0; i<5; i++) {
-			lever_down();
-			pause(300);
-			lever_middle();
-			pause(300);
-		}
-		pause(500);
-			
-		pause(1000);
-
-		bprintf("backing up\n");
-		nav_straight_stop(30, -96);
+		go_to(arena[(id+2)%6].center.x, arena[(id+2)%6].center.y, vel);
 	}
 }
