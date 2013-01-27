@@ -21,3 +21,7 @@ float max(float a, float b) {
 	if(a>b) return a;
 	return b;
 }
+
+float angle_between(int x1, int y1, int x2, int y2) {
+	return (atan2(y2-y1, x2-x1)/M_PI)*180;
+}

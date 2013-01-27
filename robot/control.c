@@ -22,7 +22,7 @@
 static pid_data pid_linear;
 
 float angle_to_target(int x, int y) {
-	return (atan2(y-bot.y, x-bot.x)/M_PI)*180;
+	return angle_between(bot.x, bot.y, x, y);
 }
 
 void go_territory(unsigned char target, int vel) {

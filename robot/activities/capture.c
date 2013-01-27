@@ -12,7 +12,7 @@ void capture(unsigned char id) {
 
 	printf("at waypoint! turning...\n");
 
-	nav_turn_to(arena[id].heading_capture);
+	nav_turn_to(within(-180, angle_between(bot.x, bot.y, arena[id].capture.x, arena[id].capture.y)+180, 180));
 	printf("back facing capture!\n");
 	printf("approaching...\n");
 

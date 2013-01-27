@@ -11,7 +11,7 @@ void mine(unsigned char id) {
 
 	printf("at waypoint! turning...\n");
 
-	nav_turn_to(arena[id].heading_mine);
+	nav_turn_to(within(-180, angle_between(bot.x, bot.y, arena[id].mine.x, arena[id].mine.y), 180));
 	printf("facing mine!\n");
 	printf("approaching...\n");
 
