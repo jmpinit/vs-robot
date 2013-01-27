@@ -10,7 +10,6 @@
 #define CURRENT_BLOCKED	15		//indicator of obstruction
 #define CURRENT_MAX		20		//danger level for motors
 #define MAX_SPEED		245		//the fastest the robot will go (leave room for PID)
-#define MIN_SPEED		35
 #define ACCEL_ENCODER	10.0
 
 #define GATE_OPEN		110
@@ -49,14 +48,15 @@ void go_territory(unsigned char target, int vel) {
 void go_to(int x, int y, int vel) {
 	//do {
 		printf("go_to: going to (%d, %d)\n", x, y);
-		float dist = vps_to_encoder(distance(bot.x, bot.x, x, y));
+		float dist = vps_to_encoder(distance(bot.x, bot.y, x, y));
 		nav_turn_to(angle_to_target(x, y));
-		nav_straight(dist-5, vel);
+		nav_straight(dist, vel);
 		nav_stop();
 		pause(10);
 	//} while(distance(bot.x, bot.y, x, y)>CLOSE_ENOUGH);
 
 	printf("go_to: success!\n");
+	printf("go_to: i think i am at (%d, %d)\n", bot.x, bot.y);
 }
 
 float pid_calc(pid_data* prefs, float current, float target) {
