@@ -18,6 +18,9 @@ float sharp_left[HIST_SHARP];
 float sharp_right[HIST_SHARP];
 float sharp_back[HIST_SHARP];
 
+int vps_derivative;
+pt vps_last;
+
 float x, y;
 long last_time;
 pt last_pos;
@@ -43,6 +46,9 @@ int sensor(void) {
 	} else {
 		x = vps_x;
 		y = vps_y;
+
+		vps_last.x = vps_x;
+		vps_last.y = vps_y;
 	}
 
 	last_pos.x = (int)x;
@@ -51,6 +57,11 @@ int sensor(void) {
 	while(true) {
 		/* VPS */
 		vps_update();
+
+		vps_derivative = (int)distance(vps_x, vps_y, vps_last.x, vps_last.y);
+
+		vps_last.x = vps_x;
+		vps_last.y = vps_y;
 
 		/* ENVIRONMENT */
 		for(unsigned char i=0; i<6; i++) {
@@ -186,7 +197,7 @@ unsigned int vps_get_rate(unsigned char id) {
 }
 
 bool vps_is_shit(void) {
-	return vps_x==0 && vps_y==0 && vps_heading==0;
+	return (vps_x==0 && vps_y==0 && vps_heading==0) || (vps_derivative==0);
 }
 
 float motor_get_current_avg(void) {
