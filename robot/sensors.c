@@ -172,6 +172,10 @@ bool vps_is_shit(void) {
 	return vps_x==0 && vps_y==0 && vps_heading==0;
 }
 
+float motor_get_current_avg(void) {
+	return (motor_get_current(MOTOR_LEFT)+motor_get_current(MOTOR_RIGHT))/2.0;
+}
+
 float encoder_read_avg(void) {
 	return (encoder_read(ENCODER_LEFT)+encoder_read(ENCODER_RIGHT))/2.0;
 }

@@ -44,6 +44,7 @@ unsigned char vps_get_rate(unsigned char id);	//get rate info for specified terr
 unsigned char get_territory(int x, int y);		//what territory is this pt in?
 bool vps_is_shit(void);							//whether the latest VPS values are valid
 
+float motor_get_current_avg(void);	//average driving motor current
 float encoder_read_avg(void);		//read the average of the two encoders
 float vps_to_encoder(float vps);	//calculate the distance in encoder ticks from VPS coords
 float encoder_to_vps(int ticks);	//calculate the distance in VPS coords from encoder ticks
