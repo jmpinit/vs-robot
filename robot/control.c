@@ -124,8 +124,6 @@ void nav_straight_stop(int distance, int v) {
 }
 
 void nav_straight(int distance, int v) {
-	nav_set_heading(bot.heading);	//drive in direction we are facing
-
 	nav_set_velocity(v);
 	int ticks_start = encoder_read_avg();
 	while(encoder_read_avg()-ticks_start<distance) { NOTHING; yield(); }	//drive for that length
@@ -135,7 +133,7 @@ void nav_turn_to(float heading) {
 	nav_set_velocity(0);
 	while(abs(bot.velocity)>bot.accel) { NOTHING; yield(); }	//wait until stopped
 	nav_set_heading(heading);
-	while(abs(within(-180, bot.heading-heading, 180))>4) { NOTHING; }	//wait until we face that direction
+	while(abs(within(-180, bot.heading-heading, 180))>8) { NOTHING; }	//wait until we face that direction
 }
 
 void tick_motion(void) {
