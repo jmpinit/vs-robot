@@ -22,14 +22,24 @@ float x, y;
 long last_time;
 pt last_pos;
 
+territory arena[6] = {
+	//center		mine			capture			mine angle	capture angle
+	{{-1350, 20},	{-1688, 341},	{-1773, -355},	149.275,	27.25,			0,0,0},
+	{{-625, -1060},	{-1165, -1322},	{-593, -1733},	-151.6,		83,				0,0,0},
+	{{650, -1065},	{575, -1670}, 	{1180, -1360},	-93,		147.7,			0,0,0},
+	{{1300, 30},	{1664, -343},	{1711, 388},	-32.8,		-151.9,			0,0,0},
+	{{640, 1165},	{1110, 1300},	{555, 1697},	25.80,		-93.27,			0,0,0},
+	{{-700, 1200},	{-555, 1634},	{-1200, 1370},	83.956,		-33.85,			0,0,0}
+};
+
 enemy other_bot;
 
 int sensor(void) {
 	last_time = get_time_us();
 
 	if(vps_is_shit()) {
-		x = map[1].center.x;
-		y = map[1].center.y;
+		x = arena[1].center.x;
+		y = arena[1].center.y;
 	} else {
 		x = vps_x;
 		y = vps_y;
@@ -41,6 +51,13 @@ int sensor(void) {
 	while(true) {
 		/* VPS */
 		vps_update();
+
+		/* ENVIRONMENT */
+		for(unsigned char i=0; i<6; i++) {
+			arena[i].balls = vps_get_balls(i);
+			arena[i].owner = vps_get_owner(i);
+			arena[i].rate = vps_get_rate(i);
+		}
 
 		/* ORIENTATION */
 		if(bot.velocity < 1 && abs(bot.heading-bot.target_heading)<8.0 && !vps_is_shit()) gyro_zero();
@@ -115,6 +132,10 @@ int sensor(void) {
 	return 0;
 }
 
+void sense_init(void) {
+	create_thread(&sensor, STACK_DEFAULT, 0, "sense_thread");
+}
+
 float sharp_get_avg(unsigned char id) {
 	unsigned int i;
 
@@ -135,10 +156,6 @@ float sharp_get_avg(unsigned char id) {
 	return senses.sharp[i];
 }
 
-void sense_init(void) {
-	create_thread(&sensor, STACK_DEFAULT, 0, "sense_thread");
-}
-
 void gyro_zero(void) {
 	bot.gyro_transform = within(-180, gyro_get_degrees() - vps_get_degrees(), 180);
 }
@@ -153,17 +170,17 @@ float vps_get_degrees(void) {
 	return val;
 }
 
-unsigned char vps_get_owner(unsigned char id) {
+unsigned int vps_get_owner(unsigned char id) {
 	if(id<6) return game.territories[id].owner;
 	return 0;
 }
 
-unsigned char vps_get_balls(unsigned char id) {
+unsigned int vps_get_balls(unsigned char id) {
 	if(id<6) return game.territories[id].remaining;
 	return 0;
 }
 
-unsigned char vps_get_rate(unsigned char id) {
+unsigned int vps_get_rate(unsigned char id) {
 	if(id<6) return game.territories[id].rate_limit;
 	return 0;
 }

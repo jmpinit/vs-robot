@@ -29,17 +29,17 @@ void go_territory(unsigned char target, int vel) {
 	unsigned char current = get_territory(bot.x, bot.y);
 	unsigned char error = target-current;
 	
-	if(error==0 && distance(bot.x, bot.y, map[current].center.x, map[current].center.y)<CLOSE_ENOUGH) return;
+	if(error==0 && distance(bot.x, bot.y, arena[current].center.x, arena[current].center.y)<CLOSE_ENOUGH) return;
 	if(abs(error>3)) {
 		//clockwise
 		while(current!=target) {
-			pt next = map[(--current)%6].center;
+			pt next = arena[(--current)%6].center;
 			go_to(next.x, next.y, vel);
 		}
 	} else {
 		//counterclockwise
 		while(current!=target) {
-			pt next = map[(++current)%6].center;
+			pt next = arena[(++current)%6].center;
 			go_to(next.x, next.y, vel);
 		}
 	}

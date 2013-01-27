@@ -11,7 +11,7 @@ void mine(unsigned char id) {
 
 	printf("at waypoint! turning...\n");
 
-	nav_turn_to(map[id].heading_mine);
+	nav_turn_to(arena[id].heading_mine);
 	printf("facing mine!\n");
 	printf("approaching...\n");
 

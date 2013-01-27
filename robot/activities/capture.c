@@ -21,7 +21,7 @@ void capture(unsigned char id) {
 
 	printf("at waypoint! turning...\n");
 
-	nav_turn_to(map[id].heading_capture);
+	nav_turn_to(arena[id].heading_capture);
 	printf("back facing capture!\n");
 	printf("approaching...\n");
 

@@ -29,6 +29,21 @@
 #define vps_enemy_x		game.coords[1].x
 #define vps_enemy_y		game.coords[1].y
 
+typedef struct {
+	pt center;
+	pt mine;
+	pt capture;
+
+	float heading_mine;
+	float heading_capture;
+
+	unsigned int balls;
+	unsigned char owner;
+	unsigned int rate;
+} territory;
+
+extern territory arena[6];
+
 int sensor(void);
 void sense_init(void);
 
@@ -38,9 +53,10 @@ float gyro_absolute(void);
 void gyro_zero(void);
 
 float vps_get_degrees(void);					//get the heading in degrees
-unsigned char vps_get_owner(unsigned char id);	//get the owner of a specified territory
-unsigned char vps_get_balls(unsigned char id);	//get ow many balls are remaining in a territory
-unsigned char vps_get_rate(unsigned char id);	//get rate info for specified territory
+unsigned int vps_get_owner(unsigned char id);	//get the owner of a specified territory
+unsigned int vps_get_balls(unsigned char id);	//get ow many balls are remaining in a territory
+unsigned int vps_get_rate(unsigned char id);	//get rate info for specified territory
+
 unsigned char get_territory(int x, int y);		//what territory is this pt in?
 bool vps_is_shit(void);							//whether the latest VPS values are valid
 

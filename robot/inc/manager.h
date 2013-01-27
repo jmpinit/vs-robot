@@ -8,16 +8,6 @@
 
 extern unsigned char team;
 
-typedef struct {
-	pt center;
-	pt mine;
-	pt capture;
-	float heading_mine;
-	float heading_capture;
-} territory;
-
-extern territory map[];
-
 /*enum Activity {
 	CAPTURE,
 	DUMP,
