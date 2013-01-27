@@ -37,9 +37,6 @@ int usetup(void) {
 
 int umain(void) {
 	nav_init();
-
-	for(int i=0; i<6; i++) visit_one(i);
-	while(true) { NOTHING; }
-
+	play();
     return 0;
 }
