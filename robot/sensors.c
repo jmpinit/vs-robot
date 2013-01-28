@@ -31,8 +31,8 @@ int sensor(void) {
 	last_time = get_time_us();
 
 	if(vps_is_shit()) {
-		x = arena[1].center.x;
-		y = arena[1].center.y;
+		x = arena[0].center.x;
+		y = arena[0].center.y;
 	} else {
 		x = vps_x;
 		y = vps_y;
