@@ -11,6 +11,6 @@ void explore(void) {
 
 	for(unsigned char id=1; id<6; id++) {
 		int target = (id+start)%6;
-		go_to(arena[target].center.x, arena[target].center.y, EXPLORE_SPEED);
+		go_territory(target, EXPLORE_SPEED);
 	}
 }
