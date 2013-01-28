@@ -48,17 +48,31 @@ void go_territory(unsigned char target, int vel) {
 }
 
 void go_to(int x, int y, int vel) {
+	GRAPH("t %d %d\n", x, y);
+
 	//do {
-		printf("go_to: going to (%d, %d)\n", x, y);
+		PRINT("go_to: going to (%d, %d)\n", x, y);
 		float dist = vps_to_encoder(distance(bot.x, bot.y, x, y));
 		nav_turn_to(angle_to_target(x, y));
-		nav_straight(dist, vel);
+		
+		nav_set_velocity(vel);
+		int ticks_start = encoder_read_avg();
+		bool check = false;
+		while(encoder_read_avg()-ticks_start<dist) {
+			if(!check && encoder_read_avg()-ticks_start>dist/2) {
+				gyro_zero();
+				check = true;
+			}
+			nav_set_heading(angle_to_target(x, y));
+			yield();
+		}	//drive for that length
+
 		nav_stop();
 		pause(10);
 	//} while(distance(bot.x, bot.y, x, y)>CLOSE_ENOUGH);
 
-	printf("go_to: success!\n");
-	printf("go_to: i think i am at (%d, %d)\n", bot.x, bot.y);
+	PRINT("go_to: success!\n");
+	PRINT("go_to: i think i am at (%d, %d)\n", bot.x, bot.y);
 }
 
 float pid_calc(pid_data* prefs, float current, float target) {
