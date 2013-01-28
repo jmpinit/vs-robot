@@ -1,11 +1,16 @@
 #include <joyos.h>
 #include "../inc/activities/explore.h"
 
-#define SPEED	96
+#define EXPLORE_SPEED	96
 
 void explore(void) {
 	bprintf("exploring\n");
-	for(unsigned char id=0; id<6; id++) {
-		go_to(arena[(id+2)%6].center.x, arena[(id+2)%6].center.y, SPEED);
+	int start;
+	if(team==TEAM_BLUE) start = 3;
+	else				start = 0;
+
+	for(unsigned char id=1; id<6; id++) {
+		int target = (id+start)%6;
+		go_to(arena[target].center.x, arena[target].center.y, EXPLORE_SPEED);
 	}
 }
