@@ -3,51 +3,77 @@
 #include "../inc/sensors.h"
 #include "../inc/activities/capture.h"
 
-#define CAPTURE_CURRENT	10
-#define FUDGE			10
+#define CAP_SPEED		128
+#define CAP_TIME		3000		//how long to spin the gears in millis
+#define PUSH			MIN_SPEED-12	//vel for pushing against gears
+#define CAP_TIMEOUT		10			//seconds until failure
+#define RETRIES			1
+#define CAPTURE_CURRENT	12
 
-void capture(unsigned char id) {
-	printf("= capturing %d =\n", id);
+bool drive_till_overcurrent(void) {
+	long start = get_time_us();
 
-	go_territory(id, 96);
-
-	printf("at waypoint! turning...\n");
-
-	nav_turn_to(within(-180, angle_between(bot.x, bot.y, arena[id].capture.x, arena[id].capture.y)+180-FUDGE, 180));
-	printf("back facing capture!\n");
-	printf("approaching...\n");
-
-	//reverse until we hit something
-	nav_set_velocity(-96);
 	float current = 0;
 	float lastcurrent = 0;
 	for(;;) {
 		current = motor_get_current_avg();
-		printf("current=%f\n");	
+		PRINT("current=%f\n", current);
 
 		if(current>CAPTURE_CURRENT && lastcurrent>CAPTURE_CURRENT) break;
+		if(get_time_us()-start>CAP_TIMEOUT*1000000) return false;
 
 		lastcurrent = current;
 	} 
 	nav_stop();
-	nav_set_velocity(-(MIN_SPEED-4));		//press against capture gears
+
+	return true;
+}
+
+void capture(unsigned char id) {
+	PRINT("= capturing %d =\n", id);
+
+	go_territory(id, CAP_SPEED);
+
+	PRINT("at waypoint! turning...\n");
+
+	nav_turn_to(within(-180, angle_between(bot.x, bot.y, arena[id].capture.x, arena[id].capture.y)+180+arena[id].heading_capture, 180));
+	PRINT("back facing capture!\n");
+	PRINT("approaching...\n");
+
+	//reverse until we hit something
+	nav_set_velocity(-CAP_SPEED);
+	drive_till_overcurrent();
+	nav_set_velocity(-PUSH);		//press against capture gears
 
 	//attempt to capture
-	printf("capturing!\n");
+	PRINT("capturing!\n");
 	for(unsigned int i=0; i<255; i++) {
 		motor_set_vel(MOTOR_CAPTURE, (team==TEAM_BLUE)? i: -i);
 		pause(5);
 	}
 
 	motor_set_vel(MOTOR_CAPTURE, (team==TEAM_BLUE)? 255: -255);
-	pause(800);
 
-	printf("spinning down\n");
+	pause(CAP_TIME);
+
+	//retry if necessary
+	int try = 0;
+	while(arena[bot.territory].owner!=robot_id && try<RETRIES) {
+		nav_straight(20, CAP_SPEED);
+		nav_turn_to(within(-180, angle_between(bot.x, bot.y, arena[id].capture.x, arena[id].capture.y)+180, 180));
+		nav_set_velocity(-CAP_SPEED);
+		drive_till_overcurrent();
+		nav_set_velocity(-PUSH);		//press against capture gears
+		pause(CAP_TIME);
+		try++;	
+	}
+
+	PRINT("spinning down\n");
 	for(int i=255; i>=0; i--) {
 		motor_set_vel(MOTOR_CAPTURE, (team==TEAM_BLUE)? i: -i);
 		pause(2);
 	}
 
-	printf("backing up\n");
-	nav_straight_stop(30, 96);
+	PRINT("backing up\n");
+	nav_straight(30, CAP_SPEED);
 }
