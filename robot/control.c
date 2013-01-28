@@ -21,6 +21,8 @@
 
 static pid_data pid_linear;
 
+bool navigating = true;
+
 float angle_to_target(int x, int y) {
 	return angle_between(bot.x, bot.y, x, y);
 }
@@ -124,6 +126,14 @@ void nav_turn_to(float heading) {
 	while(abs(within(-180, bot.heading-heading, 180))>8) { NOTHING; }	//wait until we face that direction
 }
 
+void nav_off(void) {
+	navigating = false;
+}
+
+void nav_on(void) {
+	navigating = true;
+}
+
 void tick_motion(void) {
 	//forward acceleration
 	if(bot.velocity<bot.target_velocity) {
@@ -147,7 +157,8 @@ void tick_motion(void) {
 
 int navigator(void) {
 	for(;;) {
-		tick_motion();
+		if(navigating)
+			tick_motion();
 
 		yield();
 	}

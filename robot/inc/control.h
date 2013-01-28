@@ -81,6 +81,9 @@ void nav_set_heading(float heading);
 void nav_stop(void);
 void nav_init(void);
 
+void nav_on(void);
+void nav_off(void);
+
 void nav_straight(int distance, int v);
 void nav_turn_to(float heading);
 
