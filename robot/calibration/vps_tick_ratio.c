@@ -5,7 +5,7 @@ int startx = vps_x;
 int starty = vps_y;
 
 nav_set_velocity(96);
-while(encoder_read_avg()-start<64) {
+while(encoder_read_avg()-start<128) {
 	NOTHING;
 	yield();
 }
