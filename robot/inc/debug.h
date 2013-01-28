@@ -1,6 +1,21 @@
 #ifndef _DEBUG_
 #define _DEBUG_
 
+/*
+   MACROS
+*/
+
+#define GRAPHING
+
+//data sent to bot_graph or sent regularly
+#ifdef GRAPHING
+	#define GRAPH(...)	printf(__VA_ARGS__)
+	#define PRINT(...)
+#else
+	#define PRINT(...) printf(__VA_ARGS__)
+	#define GRAPH(...)
+#endif
+
 #define ARRAY_SIZE(foo) (sizeof(foo)/sizeof(foo[0]))
 #define NOTHING asm volatile ("NOP")
 
