@@ -8,15 +8,17 @@
 
 #define HIST_SHARP	10
 
-typedef struct {
-	float sharp[3];
-} bot_senses;
+territory arena[6] = {
+	//center		mine			capture			mine angle	capture angle
+	{{-1350, 20},	{-1620, 320},	{-1750, -375},	0,			28,				0,0,0},
+	{{-625, -1060},	{-1100, -1230},	{-550, -1700},	0,			-28,			0,0,0},
+	{{650, -1065},	{510, -1575}, 	{1200, -1300},	0,			-28,			0,0,0},
+	{{1300, 30},	{1600, -400},	{1700, 330},	0,			-25,			0,0,0},
+	{{640, 1165},	{1100, 1250},	{600, 1750},	0,			-25,			0,0,0},
+	{{-700, 1200},	{-520, 1600},	{-1200, 1400},	0,			-25,			0,0,0}
+};
 
-bot_senses senses;
-
-float sharp_left[HIST_SHARP];
-float sharp_right[HIST_SHARP];
-float sharp_back[HIST_SHARP];
+enemy other_bot;
 
 int vps_derivative;
 pt vps_last;
@@ -24,18 +26,6 @@ pt vps_last;
 float x, y;
 long last_time;
 pt last_pos;
-
-territory arena[6] = {
-	//center		mine			capture			mine angle	capture angle
-	{{-1350, 20},	{-1620, 320},	{-1750, -375},	149.275,	27.25,			0,0,0},
-	{{-625, -1060},	{-1100, -1230},	{-550, -1700},	-151.6,		83,				0,0,0},
-	{{650, -1065},	{510, -1575}, 	{1200, -1300},	-93,		147.7,			0,0,0},
-	{{1300, 30},	{1600, -400},	{1700, 330},	-32.8,		-151.9,			0,0,0},
-	{{640, 1165},	{1100, 1250},	{600, 1750},	25.80,		-93.27,			0,0,0},
-	{{-700, 1200},	{-520, 1600},	{-1200, 1400},	83.956,		-33.85,			0,0,0}
-};
-
-enemy other_bot;
 
 int sensor(void) {
 	last_time = get_time_us();
@@ -107,36 +97,6 @@ int sensor(void) {
 		bot.obstructed = false;
 		if(bot.velocity>1 && bot.real_velocity<5) bot.obstructed = true;
 
-		/* SHARP DISTANCE SENSORS */
-		//move back histories
-		for(int i=HIST_SHARP-1; i>0; i--)
-			sharp_left[i] = sharp_left[i-1];
-		for(int i=HIST_SHARP-1; i>0; i--)
-			sharp_right[i] = sharp_left[i-1];
-		for(int i=HIST_SHARP-1; i>0; i--)
-			sharp_back[i] = sharp_left[i-1];
-
-		//add new values
-		sharp_left[0] = analog_read(SHARP_LEFT);
-		sharp_right[0] = analog_read(SHARP_RIGHT);
-		sharp_back[0] = analog_read(SHARP_BACK);
-
-		//running average of distances
-		float total = 0;
-		for(int i=0; i<HIST_SHARP; i++)
-			total += sharp_left[i];
-		senses.sharp[0] = total/((float)HIST_SHARP);
-
-		total = 0;
-		for(int i=0; i<HIST_SHARP; i++)
-			total += sharp_right[i];
-		senses.sharp[1] = total/((float)HIST_SHARP);
-
-		total = 0;
-		for(int i=0; i<HIST_SHARP; i++)
-			total += sharp_back[i];
-		senses.sharp[2] = total/((float)HIST_SHARP);
-
 		yield();
 	}
 
@@ -145,26 +105,6 @@ int sensor(void) {
 
 void sense_init(void) {
 	create_thread(&sensor, STACK_DEFAULT, 0, "sense_thread");
-}
-
-float sharp_get_avg(unsigned char id) {
-	unsigned int i;
-
-	switch(id) {
-		case SHARP_LEFT:
-			i = 0;
-			break;
-		case SHARP_RIGHT:
-			i = 1;
-			break;
-		case SHARP_BACK:
-			i = 2;
-			break;
-		default:
-			i = 0;
-	}
-
-	return senses.sharp[i];
 }
 
 void gyro_zero(void) {

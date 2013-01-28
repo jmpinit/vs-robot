@@ -47,8 +47,6 @@ extern territory arena[6];
 int sensor(void);
 void sense_init(void);
 
-float sharp_get_avg(unsigned char id);
-
 float gyro_absolute(void);
 void gyro_zero(void);
 
