@@ -32,6 +32,7 @@ pt vps_last;
 
 float x, y;
 long last_time;
+float last_heading;
 pt last_pos;
 
 int sensor(void) {
@@ -46,12 +47,18 @@ int sensor(void) {
 
 		vps_last.x = vps_x;
 		vps_last.y = vps_y;
+
+		last_heading = gyro_get_degrees();
+
+		gyro_zero();
 	}
 
 	last_pos.x = (int)x;
 	last_pos.y = (int)y;
 
 	while(true) {
+		float dt = (get_time_us()-last_time)/1000000.0;
+
 		/* VPS */
 		vps_update();
 
@@ -68,12 +75,18 @@ int sensor(void) {
 		}
 
 		/* ORIENTATION */
-		if(bot.velocity < 1 && abs(bot.heading-bot.target_heading)<8.0 && !vps_is_shit()) gyro_zero();
+		//rotational speed
+		float now_heading = gyro_get_degrees();
+		bot.w = (last_heading-now_heading)*dt;
+		last_heading = now_heading;
+		PRINT("w=%f\n", bot.w);
+
+		//zeroing
+		//if(abs(bot.w)<0.001 && bot.velocity<1) gyro_zero();
 		bot.heading = gyro_absolute();
 
 		/* POSITION */
 		if(vps_is_shit()) {
-			float dt = (get_time_us()-last_time)/1000000.0;
 			float ticks = bot.velocity * VEL_SLOPE;
 			float vps = encoder_to_vps(ticks);
 			float d = vps*dt;
