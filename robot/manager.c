@@ -87,6 +87,8 @@ int get_best(void){
                 pts += 100;					//we could capture it
             pts += 40*arena[id].balls;		//points for mining it
             pts -= 40*num_hops(id);			//penalize for being far away
+
+			if(pts<0) pts = 0;
         }
 
         if(pts>best_pts){
