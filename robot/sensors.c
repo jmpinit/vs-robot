@@ -6,7 +6,14 @@
 #include "inc/debug.h"
 #include "inc/manager.h"
 
-#define HIST_SHARP	10
+/* capture & mine
+149.275,	27.25, 
+-151.6,		83,	   
+-93,		147.7, 
+-32.8,		-151.9,
+25.80,		-93.27,
+83.956,		-33.85,
+*/
 
 territory arena[6] = {
 	//center		mine			capture			mine angle	capture angle
