@@ -111,18 +111,6 @@ void nav_stop(void) {
 	motor_brake(MOTOR_RIGHT);
 }
 
-void nav_straight_stop(int distance, int v) {
-	int stop_distance = (float)(distance-(1.0/bot.deccel)*ACCEL_ENCODER);	//account for decceleration
-	
-	nav_straight(stop_distance, v);
-	nav_set_velocity(64);
-	while(encoder_read_avg()<distance) { NOTHING; yield(); }	//drive for that length
-	nav_set_velocity(0);
-	motor_brake(MOTOR_LEFT);
-	motor_brake(MOTOR_RIGHT);
-	bot.velocity = 0;
-}
-
 void nav_straight(int distance, int v) {
 	nav_set_velocity(v);
 	int ticks_start = encoder_read_avg();

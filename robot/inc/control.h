@@ -82,7 +82,6 @@ void nav_stop(void);
 void nav_init(void);
 
 void nav_straight(int distance, int v);
-void nav_straight_stop(int distance, int v);
 void nav_turn_to(float heading);
 
 void go_territory(unsigned char target, int vel);
