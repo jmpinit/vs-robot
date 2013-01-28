@@ -69,9 +69,9 @@ int sensor(void) {
 
 		/* ENVIRONMENT */
 		for(unsigned char i=0; i<6; i++) {
-			arena[i].balls = vps_get_balls(i);
-			arena[i].owner = vps_get_owner(i);
-			arena[i].rate = vps_get_rate(i);
+			arena[i].balls = game.territories[i].remaining;
+			arena[i].owner = game.territories[i].owner;
+			arena[i].rate = game.territories[i].rate_limit;
 		}
 
 		/* ORIENTATION */
@@ -104,7 +104,10 @@ int sensor(void) {
 		bot.x = (int)x;
 		bot.y = (int)y;
 
-		//printf("%d %d\n", bot.x, bot.y);
+		bot.territory = get_territory(bot.x, bot.y);
+
+		GRAPH("p %d %d\n", bot.x, bot.y);
+		GRAPH("h %f\n", bot.heading);
 
 		last_time = get_time_us();
 
@@ -173,7 +176,7 @@ float vps_to_encoder(float dist) {
 }
 
 float encoder_to_vps(int ticks) {
-	return ticks/TICKS_PER_VPS;
+	return ((float)ticks)/TICKS_PER_VPS;
 }
 
 unsigned char get_territory(int x, int y) {
