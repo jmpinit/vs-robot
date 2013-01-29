@@ -9,7 +9,6 @@
 #include "inc/debug.h"
 
 #include "inc/activities/capture.h"
-#include "inc/activities/dump.h"
 #include "inc/activities/explore.h"
 #include "inc/activities/mine.h"
 #include "inc/activities/score.h"
@@ -34,7 +33,7 @@ void play(void) {
 
     act = ACT_EXPLORE;
 
-	go_territory(0, 96);
+	go_territory(0, 240);
 	nav_turn_to(angle_between(bot.x, bot.y, arena[0].mine.x, arena[0].mine.y));
 	halt();
 
