@@ -35,6 +35,10 @@ def bot_to_screen(x, y):
 def decode():
 	line = ser.readline().strip()
 	parts = line.split(" ")
+
+	global target
+	global heading
+
 	try:
 		if(len(parts)>1):
 			if(parts[0]=="p"):
@@ -68,7 +72,7 @@ def draw():
 		pygame.draw.circle(screen, (255, 255, 255), path[-1], 8)
 
 		# draw heading
-		pygame.draw.line(screen, (128, 128, 128), (path[-1][0], path[-1][1]), (path[-1][0]+12*math.cos(heading), path[-1][1]+12*math.sin(heading)), 2)
+		pygame.draw.line(screen, (128, 128, 128), (path[-1][0], path[-1][1]), (int(path[-1][0]+12*math.cos(2*math.pi*heading/360.0)), int(path[-1][1]+12*math.sin(2*math.pi*heading/360))), 2)
 
 	pygame.draw.circle(screen, (255, 0, 0), target, 8)
 
