@@ -12,6 +12,7 @@
 #include "activities/dump.c"
 #include "activities/explore.c"
 #include "activities/mine.c"
+#include "activities/score.c"
 
 #define ACT_EXPLORE	0
 #define ACT_PLAY	1
@@ -57,6 +58,25 @@ void play(void) {
 				}
 				break;
 			case ACT_DUMP:
+                if(team==TEAM_BLUE){
+                    if((int)bot.territory>=3)
+                        score(bot.territory());
+                    else if ((int)bot.territory==2
+                        score(3);
+                    else
+                        score(5);
+                    }
+                else {
+                    if((int)bot.territory<3)
+                        score(bot.territory());
+                    else if ((int)bot.territory==3)
+                        score(2);
+                    else
+                        score(0);
+                    
+                }
+                        
+                }
 				//TODO emergency ball dump before end
 				//dump balls anyway even if we think we don't have any?
 				break;
