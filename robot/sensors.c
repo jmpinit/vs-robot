@@ -6,6 +6,8 @@
 #include "inc/debug.h"
 #include "inc/manager.h"
 
+#define FUDGE	6.5
+
 /* capture & mine
 149.275,	27.25, 
 -151.6,		83,	   
@@ -77,25 +79,29 @@ int sensor(void) {
 		/* ORIENTATION */
 		//rotational speed
 		float now_heading = gyro_get_degrees();
-		bot.w = (last_heading-now_heading)*dt;
+		bot.w = (last_heading-now_heading)/dt;
 		last_heading = now_heading;
-		PRINT("w=%f\n", bot.w);
 
-		//zeroing
-		//if(abs(bot.w)<0.001 && bot.velocity<1) gyro_zero();
 		bot.heading = gyro_absolute();
 
 		/* POSITION */
 		if(vps_is_shit()) {
 			float ticks = bot.velocity * VEL_SLOPE;
 			float vps = encoder_to_vps(ticks);
-			float d = vps*dt;
+			float d = vps*dt*FUDGE;
 
 			x += d*cos(2.0*M_PI*bot.heading/360.0);
 			y += d*sin(2.0*M_PI*bot.heading/360.0);
 		} else {
+			float ticks = bot.velocity * VEL_SLOPE;
+			float vps = encoder_to_vps(ticks);
+			float d = 0.3*vps*FUDGE;
+
 			x = vps_x;
 			y = vps_y;
+
+			x += d*cos(2.0*M_PI*bot.heading/360.0);
+			y += d*sin(2.0*M_PI*bot.heading/360.0);
 
 			//keep track of enemy too
 			other_bot.x = vps_enemy_x;
