@@ -18,7 +18,7 @@ screen = pygame.display.set_mode((1024, 600), pygame.FULLSCREEN)
 ser = serial.Serial(port, 19200, timeout = 1)
 
 path = list()
-target = (0, 0)
+target = (512, 300)
 heading = 0
 
 def init():
@@ -35,13 +35,17 @@ def bot_to_screen(x, y):
 def decode():
 	line = ser.readline().strip()
 	parts = line.split(" ")
-	if(len(parts)>1):
-		if(parts[0]=="p"):
-			path.append(bot_to_screen(int(parts[1]), int(parts[2])))
-		elif(parts[0]=="t"):
-			target = bot_to_screen(int(parts[1]), int(parts[2]))
-		elif(parts[0]=="h"):
-			heading = float(parts[1])
+	try:
+		if(len(parts)>1):
+			if(parts[0]=="p"):
+				path.append(bot_to_screen(int(parts[1]), int(parts[2])))
+			elif(parts[0]=="t"):
+				target = bot_to_screen(int(parts[1]), int(parts[2]))
+			elif(parts[0]=="h"):
+				heading = float(parts[1])
+	except:
+		pygame.image.save(screen, "data.png");
+		raise
 
 def draw():
 	screen.fill((0, 0, 0));
@@ -66,6 +70,8 @@ def draw():
 		# draw heading
 		pygame.draw.line(screen, (128, 128, 128), (path[-1][0], path[-1][1]), (path[-1][0]+12*math.cos(heading), path[-1][1]+12*math.sin(heading)), 2)
 
+	pygame.draw.circle(screen, (255, 0, 0), target, 8)
+
 	pygame.display.flip()
 
 init()
@@ -75,5 +81,5 @@ while 1:
 
 	for event in pygame.event.get():
 		if(event.type==pygame.KEYDOWN):
-			pygame.image.save(screen, "dataz.png");
+			pygame.image.save(screen, "data.png");
 			exit()
