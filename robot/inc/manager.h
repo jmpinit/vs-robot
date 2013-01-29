@@ -23,7 +23,6 @@ void play(void);
 
 //pick the next 
 //activity act_pick(void);
-void circle(unsigned int r, int vel);
 void visit_one(unsigned char id);
 
 #endif

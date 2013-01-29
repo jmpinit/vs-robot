@@ -99,26 +99,6 @@ int get_best(void){
     return best;
 }
 
-void circle(unsigned int r, int vel) {
-	pid_data pid_circle;
-	pid_circle.epsilon	= 0.01;
-	pid_circle.dt		= 0.01;
-	pid_circle.Kp		= 0.01;
-	pid_circle.Kd		= 0.002;
-	pid_circle.Ki		= 0.0001;
-
-	float angle = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
-	float start = angle-16;
-	nav_turn_to(angle+90);
-	nav_set_velocity(vel);
-
-	while(within(0, angle-start, 360)>10) {
-		angle = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
-		nav_set_heading(angle+90);
-		yield();
-	}
-}
-
 void visit_one(unsigned char id) {
 	capture(id);
 	mine(id);
