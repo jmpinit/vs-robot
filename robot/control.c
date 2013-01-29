@@ -31,21 +31,10 @@ void go_territory(unsigned char target, int vel) {
 	unsigned char error = target-current;
 	
 	if(error==0 && distance(bot.x, bot.y, arena[current].center.x, arena[current].center.y)<CLOSE_ENOUGH) return;
-	if(abs(error>3)) {
-		//clockwise
-		while(current!=target) {
-			pt next = arena[(--current)%6].center;
-			//go_to(next.x, next.y, vel);
-			circle_to(current);
-		}
-	} else {
-		//counterclockwise
-		while(current!=target) {
-			pt next = arena[(++current)%6].center;
-			//go_to(next.x, next.y, vel);
-			circle_to(current);
-		}
-	}
+	if(abs(error>3))
+		circle_to(target, vel, CLOCKWISE);
+	else
+		circle_to(target, vel, COUNTERCLOCKWISE);
 }
 
 void go_to(int x, int y, int vel) {
