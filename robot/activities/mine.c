@@ -8,7 +8,6 @@
 
 void wall_square(void) {
 	//square ourselves
-	nav_off();
 	long start = get_time_us();
 	while(!(digital_read(CONTACT_LEFT) && digital_read(CONTACT_RIGHT)) && (get_time_us()-start<MINE_TIMEOUT*1000000)) {
 		if(digital_read(CONTACT_LEFT)) {
@@ -20,7 +19,6 @@ void wall_square(void) {
 			motor_set_vel(MOTOR_LEFT, 64);
 		}
 	}
-	nav_on();
 }
 
 void mine(unsigned char id) {
@@ -30,16 +28,17 @@ void mine(unsigned char id) {
 
 	PRINT("at waypoint! turning...\n");
 
-	nav_turn_to(within(-180, angle_between(bot.x, bot.y, arena[id].mine.x, arena[id].mine.y)+arena[id].heading_mine, 180));
+	nav_turn_to(angle_between(bot.x, bot.y, arena[id].mine.x, arena[id].mine.y));
 	PRINT("facing mine!\n");
 	PRINT("approaching...\n");
 
 	//forward until we hit something
 	nav_set_velocity(MINE_SPEED);
 	float start = get_time_us();
-	while(!digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT) && (get_time_us()-start<MINE_TIMEOUT*1000000)) { NOTHING; yield(); }
+	while(!digital_read(CONTACT_LEFT) && !digital_read(CONTACT_RIGHT) && (get_time_us()-start<5000000)) { NOTHING; yield(); }
 	nav_stop();
 
+	nav_off();
 	wall_square();
 
 	//attempt to mine
@@ -55,6 +54,7 @@ void mine(unsigned char id) {
 
 	PRINT("backing up\n");
 	nav_straight(30, -MINE_SPEED);
+	nav_on();
 
 	lever_up();
 }
