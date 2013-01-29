@@ -2,7 +2,7 @@
 #include "../inc/activities/score.h"
 #include "../inc/manager.h"
 #include "../inc/sensors.h"
-#include "../control.c"
+#include "../inc/control.h"
 
 #define SCORE_CURRENT   10
 #define FUDGE           10
@@ -14,7 +14,7 @@ void score(unsigned char id) {
     
     printf("at waypoint! turning...\n");
     
-    nav_turn_to(within(-180, angle_between(bot.x, bot.y, arena[((int)id+3) % 6)].waypoint.x , arena[((int)id+3) % 6)].waypoint.y)+180, -FUDGE, 180));
+	//TODO turn towards target
     
     //go until we hit the inside wall
     nav_set_velocity(-96);
@@ -26,12 +26,12 @@ void score(unsigned char id) {
         
         if(current>SCORE_CURRENT && lastcurrent>SCORE_CURRENT) break;
         
-        lastcurrent = current;g
+        lastcurrent = current;
     }
     nav_stop();
     
     //Dump!
-    printf("dumping!\m");
+    printf("dumping!\n");
     gate_open();
     pause(1500);
     gate_close();

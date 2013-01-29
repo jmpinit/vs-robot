@@ -1,7 +1,9 @@
 #include <joyos.h>
-#include "../inc/manager.h"
-#include "../inc/sensors.h"
 #include "../inc/activities/capture.h"
+#include "../inc/manager.h"
+#include "../inc/debug.h"
+#include "../inc/control.h"
+#include "../inc/sensors.h"
 
 #define CAP_SPEED		128
 #define CAP_TIME		3000		//how long to spin the gears in millis

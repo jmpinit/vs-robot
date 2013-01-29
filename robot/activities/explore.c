@@ -1,10 +1,12 @@
 #include <joyos.h>
 #include "../inc/activities/explore.h"
+#include "../inc/manager.h"
+#include "../inc/debug.h"
 
 #define EXPLORE_SPEED	96
 
 void explore(void) {
-	bprintf("exploring\n");
+	PRINT("exploring\n");
 	int start;
 	if(team==TEAM_BLUE) start = 3;
 	else				start = 0;

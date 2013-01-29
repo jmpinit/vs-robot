@@ -8,11 +8,11 @@
 #include "inc/util_math.h"
 #include "inc/debug.h"
 
-#include "activities/capture.c"
-#include "activities/dump.c"
-#include "activities/explore.c"
-#include "activities/mine.c"
-#include "activities/score.c"
+#include "inc/activities/capture.h"
+#include "inc/activities/dump.h"
+#include "inc/activities/explore.h"
+#include "inc/activities/mine.h"
+#include "inc/activities/score.h"
 
 #define ACT_EXPLORE	0
 #define ACT_PLAY	1
@@ -58,25 +58,21 @@ void play(void) {
 				}
 				break;
 			case ACT_DUMP:
-                if(team==TEAM_BLUE){
-                    if((int)bot.territory>=3)
-                        score(bot.territory());
-                    else if ((int)bot.territory==2
-                        score(3);
-                    else
-                        score(5);
-                    }
-                else {
-                    if((int)bot.territory<3)
-                        score(bot.territory());
-                    else if ((int)bot.territory==3)
-                        score(2);
-                    else
-                        score(0);
-                    
-                }
-                        
-                }
+				if(team==TEAM_BLUE) {
+					if(bot.territory>=3)
+						score(bot.territory);
+					else if(bot.territory==2)
+						score(3);
+					else
+						score(5);
+				} else {
+					if(bot.territory<3)
+						score(bot.territory);
+					else if(bot.territory==3)
+						score(2);
+					else
+						score(0);
+				}
 				//TODO emergency ball dump before end
 				//dump balls anyway even if we think we don't have any?
 				break;
@@ -86,7 +82,7 @@ void play(void) {
 
 /*
    returns the minimum # of intermediate territories
-*/
+   */
 int num_hops(unsigned char id) {
 	int error = id-bot.territory;
 	if(error==0) return 0;

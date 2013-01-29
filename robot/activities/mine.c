@@ -1,6 +1,8 @@
 #include <joyos.h>
 #include "../inc/activities/mine.h"
+#include "../inc/sensors.h"
 #include "../inc/control.h"
+#include "../inc/debug.h"
 
 #define TRIES			3
 #define MINE_TIMEOUT	3	//time until failure (sec)
