@@ -7,8 +7,7 @@
 #include "inc/manager.h"
 #include "inc/util_math.h"
 
-#define CURRENT_BLOCKED	15		//indicator of obstruction
-#define CURRENT_MAX		20		//danger level for motors
+#define MOVE_R			1000
 #define MAX_SPEED		245		//the fastest the robot will go (leave room for PID)
 #define ACCEL_ENCODER	10.0
 
@@ -36,13 +35,15 @@ void go_territory(unsigned char target, int vel) {
 		//clockwise
 		while(current!=target) {
 			pt next = arena[(--current)%6].center;
-			go_to(next.x, next.y, vel);
+			//go_to(next.x, next.y, vel);
+			circle_to(current);
 		}
 	} else {
 		//counterclockwise
 		while(current!=target) {
 			pt next = arena[(++current)%6].center;
-			go_to(next.x, next.y, vel);
+			//go_to(next.x, next.y, vel);
+			circle_to(current);
 		}
 	}
 }
@@ -84,7 +85,7 @@ float pid_calc_g(pid_data* prefs, float current, float target) {
 	return output;
 }
 
-void circle_counterclockwise(unsigned int r, int vel) {
+void circle_to(unsigned char id, int vel) {
 	pid_data pid_circle;
 	pid_circle.epsilon	= 0.01;
 	pid_circle.dt		= 0.01;
@@ -94,22 +95,18 @@ void circle_counterclockwise(unsigned int r, int vel) {
 
 	float anglecenter = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
 	float tangent = anglecenter+90;
-	float start = bot.territory;	//the beginning slice
 	nav_turn_to(tangent);
 	nav_set_velocity(vel);
 
-	bool exited = false;
-	while(bot.territory!=start || !exited) {
+	while(bot.territory!=id) {
 		anglecenter = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
 		tangent = anglecenter+90;
 
-		float correction = pid_calc_g(&pid_circle, distance(0, 0, bot.x, bot.y), r);
+		float correction = pid_calc_g(&pid_circle, distance(0, 0, bot.x, bot.y), MOVE_R);
 		if(correction>45) correction = 45;
 		if(correction<-45) correction = -45;
 
 		nav_set_heading(tangent-correction);
-
-		if(bot.territory!=start) exited = true;
 
 		yield();
 	}
