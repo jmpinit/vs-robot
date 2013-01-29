@@ -95,7 +95,7 @@ int sensor(void) {
 		} else {
 			float ticks = bot.velocity * VEL_SLOPE;
 			float vps = encoder_to_vps(ticks);
-			float d = 0.3*vps*FUDGE;
+			float d = 0.3*vps;
 
 			x = vps_x;
 			y = vps_y;
