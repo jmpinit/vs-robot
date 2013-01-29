@@ -85,7 +85,7 @@ float pid_calc_g(pid_data* prefs, float current, float target) {
 	return output;
 }
 
-void circle_to(unsigned char id, int vel) {
+void circle_to(unsigned char id, int vel, unsigned char dir) {
 	pid_data pid_circle;
 	pid_circle.epsilon	= 0.01;
 	pid_circle.dt		= 0.01;
@@ -94,13 +94,13 @@ void circle_to(unsigned char id, int vel) {
 	pid_circle.Ki		= 0.01;
 
 	float anglecenter = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
-	float tangent = anglecenter+90;
+	float tangent = anglecenter+(dir==COUNTERCLOCKWISE)? 90: -90;
 	nav_turn_to(tangent);
 	nav_set_velocity(vel);
 
 	while(bot.territory!=id) {
 		anglecenter = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
-		tangent = anglecenter+90;
+		tangent = anglecenter+(dir==COUNTERCLOCKWISE)? 90: -90;
 
 		float correction = pid_calc_g(&pid_circle, distance(0, 0, bot.x, bot.y), MOVE_R);
 		if(correction>45) correction = 45;

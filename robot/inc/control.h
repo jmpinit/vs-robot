@@ -3,6 +3,9 @@
 
 #include "util_math.h"
 
+#define CLOCKWISE			0
+#define COUNTERCLOCKWISE	1
+
 #define MIN_SPEED		35
 #define CLOSE_ENOUGH	512
 
@@ -89,7 +92,7 @@ void nav_turn_to(float heading);
 
 void go_territory(unsigned char target, int vel);
 void go_to(int x, int y, int vel);
-void circle_to(unsigned char id, int vel);
+void circle_to(unsigned char id, int vel, unsigned char dir);
 float pid_calc(pid_data* prefs, float current, float target);
 
 #endif
