@@ -33,7 +33,8 @@ void play(void) {
 
     act = ACT_EXPLORE;
 
-	for(unsigned char i=0; i<6; i++) capture(i);
+	go_territory(0, 96);
+	nav_turn_to(angle_between(bot.x, bot.y, arena[0].mine.x, arena[0].mine.y));
 	halt();
 
 	//main game loop

@@ -57,12 +57,7 @@ void go_to(int x, int y, int vel) {
 		
 		nav_set_velocity(vel);
 		int ticks_start = encoder_read_avg();
-		bool check = false;
 		while(encoder_read_avg()-ticks_start<dist) {
-			if(!check && encoder_read_avg()-ticks_start>dist/2) {
-				gyro_zero();
-				check = true;
-			}
 			nav_set_heading(angle_to_target(x, y));
 			yield();
 		}	//drive for that length
@@ -181,8 +176,9 @@ void nav_straight(int distance, int v) {
 void nav_turn_to(float heading) {
 	nav_set_velocity(0);
 	while(abs(bot.velocity)>bot.accel) { NOTHING; yield(); }	//wait until stopped
+	gyro_zero();	//take the chance to update
 	nav_set_heading(heading);
-	while(abs(within(-180, bot.heading-heading, 180))>8) { NOTHING; }	//wait until we face that direction
+	while(abs(within(-180, bot.heading-heading, 180))>6) { NOTHING; }	//wait until we face that direction
 }
 
 void nav_off(void) {

@@ -37,6 +37,6 @@ int usetup(void) {
 
 int umain(void) {
 	nav_init();
-	play();
+	circle_counterclockwise(1200, 96);
     return 0;
 }
