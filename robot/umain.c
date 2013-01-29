@@ -7,10 +7,22 @@
 #include "inc/util_math.h"
 #include "inc/manager.h"
 
+#include "manager.c"
+#include "sensors.c"
+#include "term.c"
+#include "control.c"
+#include "util_math.c"
+#include "debug.c"
+
+#include "activities/mine.c"
+#include "activities/capture.c"
+
+
 #define GYRO_PORT		8
 #define LSB_US_PER_DEG	1400000
 
 unsigned char team;
+
 
 int usetup(void) {
 	blue_init(MYUBBR);

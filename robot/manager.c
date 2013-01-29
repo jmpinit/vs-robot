@@ -13,6 +13,7 @@
 #include "inc/activities/mine.h"
 #include "inc/activities/score.h"
 
+
 #define ACT_EXPLORE	0
 #define ACT_PLAY	1
 #define ACT_DUMP	2
@@ -22,6 +23,8 @@
 
 int act;
 unsigned char points[4];
+int mined_balls;
+
 
 int get_best(void);
 
@@ -33,15 +36,13 @@ void play(void) {
 
     act = ACT_EXPLORE;
 
-	go_territory(0, 240);
-	nav_turn_to(angle_between(bot.x, bot.y, arena[0].mine.x, arena[0].mine.y));
-	halt();
 
 	//main game loop
 	while(true) {
 		switch(act) {
 			case ACT_EXPLORE:
-				explore();
+				mined_balls = 0;
+                explore();
 				act = 1;
 				break;
 			case ACT_PLAY:
@@ -49,9 +50,14 @@ void play(void) {
 				vps_update();
 				if(vps_get_owner(bot.territory)!=team) {		//if not ours yet
 					capture(bot.territory);			//capture it
-				} else if(vps_get_balls(bot.territory)>0) {	//if it is ours and there are balls
+				}
+                else if(vps_get_balls(bot.territory)>0) {	//if it is ours and there are balls
 					mine(bot.territory);						//get the balls
-				} else {
+				}
+                else if(mined_balls>=15){
+                    act = 2;
+                }
+                else {
 					//move to different territory NOT containg opponent
 					go_territory(get_best(), MOVE_SPEED);
 				}
@@ -74,6 +80,7 @@ void play(void) {
 				}
 				//TODO emergency ball dump before end
 				//dump balls anyway even if we think we don't have any?
+                act = 1;
 				break;
 		}
 	}
