@@ -23,7 +23,6 @@
 
 int act;
 unsigned char points[4];
-int mined_balls;
 
 
 int get_best(void);

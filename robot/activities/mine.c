@@ -4,6 +4,8 @@
 #include "../inc/control.h"
 #include "../inc/debug.h"
 
+int mined_balls = 0;
+
 #define TRIES			3
 #define MINE_TIMEOUT	3	//time until failure (sec)
 #define MINE_SPEED		96
@@ -51,6 +53,7 @@ void mine(unsigned char id) {
 		pause(300);
 		lever_middle();
 		pause(300);
+        mined_balls++;
 	}
 	pause(500);
 
