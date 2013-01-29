@@ -14,8 +14,8 @@
 #define SHARP_RIGHT		12
 #define SHARP_BACK		14
 
-#define CONTACT_LEFT	1
-#define CONTACT_RIGHT	3
+#define CONTACT_LEFT	2
+#define CONTACT_RIGHT	4
 
 /* VPS INFO */
 #define vps_update()	copy_objects()
