@@ -89,6 +89,7 @@ void nav_turn_to(float heading);
 
 void go_territory(unsigned char target, int vel);
 void go_to(int x, int y, int vel);
+void circle_counterclockwise(unsigned int r, int vel);
 float pid_calc(pid_data* prefs, float current, float target);
 
 #endif

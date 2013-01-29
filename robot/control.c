@@ -75,6 +75,51 @@ void go_to(int x, int y, int vel) {
 	PRINT("go_to: i think i am at (%d, %d)\n", bot.x, bot.y);
 }
 
+float pid_calc_g(pid_data* prefs, float current, float target) {
+	float error = target - current;
+
+	if(abs(error) > prefs->epsilon)
+		prefs->integral = prefs->integral + error*prefs->dt;
+	float derivative = (error - prefs->pre_error)/prefs->dt;
+	float output = prefs->Kp*error + prefs->Ki*prefs->integral + prefs->Kd*derivative;
+
+	//Update error
+	prefs->pre_error = error;
+
+	return output;
+}
+
+void circle_counterclockwise(unsigned int r, int vel) {
+	pid_data pid_circle;
+	pid_circle.epsilon	= 0.01;
+	pid_circle.dt		= 0.01;
+	pid_circle.Kp		= 1.00;
+	pid_circle.Kd		= 0.1;
+	pid_circle.Ki		= 0.01;
+
+	float anglecenter = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
+	float tangent = anglecenter+90;
+	float start = bot.territory;	//the beginning slice
+	nav_turn_to(tangent);
+	nav_set_velocity(vel);
+
+	bool exited = false;
+	while(bot.territory!=start || !exited) {
+		anglecenter = 360.0*atan2(bot.y, bot.x)/(2.0*M_PI);
+		tangent = anglecenter+90;
+
+		float correction = pid_calc_g(&pid_circle, distance(0, 0, bot.x, bot.y), r);
+		if(correction>45) correction = 45;
+		if(correction<-45) correction = -45;
+
+		nav_set_heading(tangent-correction);
+
+		if(bot.territory!=start) exited = true;
+
+		yield();
+	}
+}
+
 float pid_calc(pid_data* prefs, float current, float target) {
 	float error = within(-180, target - current, 180);
 
